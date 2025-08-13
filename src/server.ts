@@ -9,6 +9,7 @@ import sensible from '@fastify/sensible';
 import cors from '@fastify/cors';
 import underPressure from '@fastify/under-pressure';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
+import { registerRoutes } from './routes';
 
 const port = env.PORT;
 const transport = env.NODE_ENV === 'development'
@@ -56,7 +57,7 @@ const options = {
 const app = Fastify(options).withTypeProvider<ZodTypeProvider>();
 
 // Readiness flag managed by this module
-let ready = false;
+app.decorate('isReady', false);
 
 // Put the requestId into context for the whole lifecycle of the request
 // and surface it to clients
@@ -81,23 +82,8 @@ app.setNotFoundHandler((_req: Request, reply: Reply) => {
   reply.status(404).send({ error: 'Not Found' });
 });
 
-// Routes
-app.get('/health/live', async () => ({ ok: true }));
-
-app.get('/health/ready', async (_req: Request, reply: Reply) => {
-  if (!ready) {
-    return reply.code(503).send({ ok: false });
-  }
-
-  return reply.send({ ok: true });
-});
-
-// Keep legacy alias if used by callers/tools
-app.get('/health', async (_req: Request, reply: Reply) => reply.send({ ok: true }));
-
-app.get('/', async (_req: Request, reply: Reply) => {
-  return reply.send({ message: 'Hello from Fastify!' });
-});
+// Register all route modules
+await registerRoutes(app);
 
 export async function start() {
   try {
@@ -111,7 +97,7 @@ export async function start() {
 
     app.log.info(`Server listening on http://localhost:${port}`);
 
-    ready = true;
+    app.isReady = true;
   } catch (err) {
     app.log.error(err);
 
@@ -121,7 +107,7 @@ export async function start() {
 
 // Ensure readiness returns false during shutdown sequence
 app.addHook('onClose', (_instance: FastifyInstance, done: HookHandlerDoneFunction) => {
-  ready = false;
+  app.isReady = false;
 
   done();
 });

@@ -5,4 +5,11 @@ export type Request = FastifyRequest;
 export type Reply = FastifyReply;
 
 // Generic route handler type
-export type RouteHandler<T = any> = (req: Request, reply: Reply) => Promise<T>;
+export type RouteHandler = (req: Request, reply: Reply) => Promise<any>;
+
+// Extend Fastify types to include our custom decorator
+declare module 'fastify' {
+    interface FastifyInstance {
+        isReady: boolean;
+    }
+}
