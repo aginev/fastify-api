@@ -1,8 +1,9 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyError, FastifyInstance, HookHandlerDoneFunction } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { IncomingMessage } from 'node:http';
 import { context, type Store } from './context';
 import { env } from './config';
+import type { Request, Reply } from './types';
 import helmet from '@fastify/helmet';
 import sensible from '@fastify/sensible';
 import cors from '@fastify/cors';
@@ -59,7 +60,7 @@ let ready = false;
 
 // Put the requestId into context for the whole lifecycle of the request
 // and surface it to clients
-app.addHook('onRequest', (req, reply, done) => {
+app.addHook('onRequest', (req: Request, reply: Reply, done: HookHandlerDoneFunction) => {
   reply.header('x-request-id', req.id);
 
   const store: Store = { requestId: req.id };
@@ -68,7 +69,7 @@ app.addHook('onRequest', (req, reply, done) => {
 });
 
 // Global error/404 handlers
-app.setErrorHandler((error, _req, reply) => {
+app.setErrorHandler((error: FastifyError, _req: Request, reply: Reply) => {
   app.log.error({ err: error }, 'Unhandled error');
 
   reply
@@ -76,14 +77,14 @@ app.setErrorHandler((error, _req, reply) => {
     .send({ error: 'Internal Server Error' });
 });
 
-app.setNotFoundHandler((_req, reply) => {
+app.setNotFoundHandler((_req: Request, reply: Reply) => {
   reply.status(404).send({ error: 'Not Found' });
 });
 
 // Routes
 app.get('/health/live', async () => ({ ok: true }));
 
-app.get('/health/ready', async (_req, reply) => {
+app.get('/health/ready', async (_req: Request, reply: Reply) => {
   if (!ready) {
     return reply.code(503).send({ ok: false });
   }
@@ -92,9 +93,9 @@ app.get('/health/ready', async (_req, reply) => {
 });
 
 // Keep legacy alias if used by callers/tools
-app.get('/health', async (_req, reply) => reply.send({ ok: true }));
+app.get('/health', async (_req: Request, reply: Reply) => reply.send({ ok: true }));
 
-app.get('/', async (_req, reply) => {
+app.get('/', async (_req: Request, reply: Reply) => {
   return reply.send({ message: 'Hello from Fastify!' });
 });
 
@@ -119,7 +120,7 @@ export async function start() {
 }
 
 // Ensure readiness returns false during shutdown sequence
-app.addHook('onClose', (_instance, done) => {
+app.addHook('onClose', (_instance: FastifyInstance, done: HookHandlerDoneFunction) => {
   ready = false;
 
   done();
