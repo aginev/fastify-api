@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { context } from './context';
+import { getRequestId } from './context';
 import app, { start } from './server';
 
 /**
@@ -43,7 +43,7 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 process.on('uncaughtException', error => {
-  const requestId = context.getStore()?.requestId;
+  const requestId = getRequestId();
 
   app.log.error({ error, requestId }, 'Uncaught exception');
 
@@ -51,7 +51,7 @@ process.on('uncaughtException', error => {
 });
 
 process.on('unhandledRejection', reason => {
-  const requestId = context.getStore()?.requestId;
+  const requestId = getRequestId();
 
   app.log.error({ error: reason, requestId }, 'Unhandled promise rejection');
 

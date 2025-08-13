@@ -1,7 +1,7 @@
 import Fastify, { FastifyError, FastifyInstance, HookHandlerDoneFunction } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { IncomingMessage } from 'node:http';
-import { context, type Store } from './context';
+import { getRequestId, setContext, type Store } from './context';
 import { env } from './config';
 import type { Request, Reply } from './types';
 import helmet from '@fastify/helmet';
@@ -30,7 +30,7 @@ const options = {
 
     // Add requestId to every log if present in context
     mixin() {
-      const requestId = context.getStore()?.requestId;
+      const requestId = getRequestId();
 
       return requestId ? { requestId } : {};
     },
@@ -66,7 +66,7 @@ app.addHook('onRequest', (req: Request, reply: Reply, done: HookHandlerDoneFunct
 
   const store: Store = { requestId: req.id };
 
-  context.run(store, done);
+  setContext(store, done);
 });
 
 // Global error/404 handlers
