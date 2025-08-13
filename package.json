@@ -4,16 +4,14 @@
   "description": "",
   "packageManager": "pnpm@10.0.0",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p .",
-    "start": "node dist/index.js",
-    "debug": "pnpm build && node --inspect dist/index.js",
-    "debug:watch": "nodemon --watch src --ext ts,js --exec 'pnpm build && node --inspect dist/index.js'",
+    "debug": "tsx --inspect src/index.ts",
+    "debug:watch": "nodemon --watch src --ext ts,js --exec 'tsx --inspect src/index.ts'",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --ext .ts,.js --fix",

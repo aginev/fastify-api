@@ -1,8 +1,8 @@
 import Fastify from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { IncomingMessage } from 'node:http';
-import { context, type Store } from './context.js';
-import { env } from './config.js';
+import { context, type Store } from './context';
+import { env } from './config';
 import helmet from '@fastify/helmet';
 import sensible from '@fastify/sensible';
 import cors from '@fastify/cors';
@@ -12,13 +12,13 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 const port = env.PORT;
 const transport = env.NODE_ENV === 'development'
   ? {
-      target: 'pino-pretty',
-      options: {
-        singleLine: true,
-        colorize: true,
-        translateTime: 'SYS:standard',
-      },
-    }
+    target: 'pino-pretty',
+    options: {
+      singleLine: true,
+      colorize: true,
+      translateTime: 'SYS:standard',
+    },
+  }
   : undefined;
 const options = {
   // Pino config
@@ -95,13 +95,7 @@ app.get('/health/ready', async (_req, reply) => {
 app.get('/health', async (_req, reply) => reply.send({ ok: true }));
 
 app.get('/', async (_req, reply) => {
-  let myVariable = 123;
-
-  if (myVariable % 2) {
-    myVariable++;
-  }
-
-  return reply.send({ message: 'Hello from Fastify!', someVariable: myVariable });
+  return reply.send({ message: 'Hello from Fastify!' });
 });
 
 export async function start() {
