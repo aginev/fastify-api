@@ -2,6 +2,8 @@ import Fastify, { FastifyError, FastifyInstance, HookHandlerDoneFunction } from 
 import { randomUUID } from 'node:crypto';
 import { IncomingMessage } from 'node:http';
 import { getRequestId, setContext, type Store } from './context';
+import { AppError } from './error';
+import { getLogLevel, type LogLevel } from './utils/logging';
 import { env } from './config';
 import type { Request, Reply } from './types';
 import helmet from '@fastify/helmet';
@@ -70,12 +72,40 @@ app.addHook('onRequest', (req: Request, reply: Reply, done: HookHandlerDoneFunct
 });
 
 // Global error/404 handlers
-app.setErrorHandler((error: FastifyError, _req: Request, reply: Reply) => {
-  app.log.error({ err: error }, 'Unhandled error');
+app.setErrorHandler((err: FastifyError, req: Request, reply: Reply) => {
+  const request = {
+    requestId: req.id,
+    url: req.url,
+    method: req.method,
+    userAgent: req.headers['user-agent'],
+    timestamp: new Date().toISOString()
+  };
+
+  const error = {
+    message: err.message,
+    code: err.code,
+    statusCode: err.statusCode ?? 500,
+    stack: err.stack,
+    context: err instanceof AppError ? err.context : {}
+  };
+
+  const logLevel: LogLevel = getLogLevel(error.statusCode);
+  const logData = { request, error };
+
+  // Type-safe logging - TypeScript will ensure logLevel is valid
+  try {
+    (app.log as any)[logLevel](logData, 'Unhandled error');
+  } catch (logError) {
+    app.log.error(logData, 'Unhandled error (fallback)');
+  }
 
   reply
-    .status(error.statusCode ?? 500)
-    .send({ error: 'Internal Server Error' });
+    .status(error.statusCode)
+    .send({
+      error: 'Internal Server Error',
+      code: error.code,
+      requestId: req.id
+    });
 });
 
 app.setNotFoundHandler((_req: Request, reply: Reply) => {
