@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mariadb:11.2
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: db_pass
+      MYSQL_DATABASE: api
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d
+      - ./docker/mariadb/conf:/etc/mysql/conf.d
+      - ./docker/mariadb/logs:/var/log/mysql
+    networks:
+      - fastify_api_network
+    # healthcheck removed - MariaDB works fine without it
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  fastify_api_network:
+    driver: bridge

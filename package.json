@@ -17,7 +17,12 @@
         "lint:fix": "eslint . --ext .ts,.js --fix",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "check": "pnpm typecheck && pnpm lint && pnpm format:check"
+        "check": "pnpm typecheck && pnpm lint && pnpm format:check",
+        "db:up": "docker-compose up -d",
+        "db:down": "docker-compose down",
+        "db:logs": "docker-compose logs -f mariadb",
+        "db:reset": "docker-compose down -v && docker-compose up mariadb -d",
+        "db:shell": "docker-compose exec mariadb mysql -u db_user -p api"
     },
     "keywords": [],
     "author": "",

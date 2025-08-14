@@ -23,9 +23,14 @@ This is a Node.js/Fastify API server with TypeScript, ESM modules, and robust er
 - [src/routes/index.ts](mdc:src/routes/index.ts) - Main router that registers all domain-specific routes
 - [src/routes/health.ts](mdc:src/routes/health.ts) - Health check endpoints (/live, /ready, /debug)
 - [src/routes/users.ts](mdc:src/routes/users.ts) - User domain routes (CRUD operations)
-- [src/routes/products.ts](mdc:src/routes/products.ts) - Product domain routes
-- [src/routes/orders.ts](mdc:src/routes/orders.ts) - Order domain routes
 - [src/routes/root.ts](mdc:src/routes/root.ts) - Root endpoint (/)
+
+### Database & Models
+- [src/models/](mdc:src/models/) - Zod schemas and TypeScript types for data validation
+- [docker/](mdc:docker/) - MariaDB Docker configuration and initialization scripts
+- **Database Schema**: Uses BIGINT UNSIGNED AUTO_INCREMENT primary keys
+- **ID Validation**: Zod schemas use `z.bigint().positive()` for ID fields
+- **Soft Deletes**: All entities include `deleted_at` timestamp field
 
 ## Key Patterns
 - Domain-based route organization with prefixes

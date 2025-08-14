@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Base user schema
 export const UserSchema = z.object({
-    id: z.uuid(),
+    id: z.bigint().positive(),
     first_name: z.string().min(1).max(100),
     last_name: z.string().min(1).max(100),
     email: z.email(),
@@ -41,7 +41,7 @@ export const UpdateUserSchema = z.object({
 
 // Params schema for route parameters
 export const UserParamsSchema = z.object({
-    id: z.uuid('Invalid user ID format'),
+    id: z.coerce.number().int().positive('User ID must be a positive integer'),
 });
 
 // Response schema for user data
@@ -66,12 +66,12 @@ export const UpdateUserResponseSchema = z.object({
 
 // Soft delete schema (for soft delete operations)
 export const SoftDeleteUserSchema = z.object({
-    id: z.uuid('Invalid user ID format'),
+    id: z.coerce.number().int().positive('User ID must be a positive integer'),
 });
 
 // Response schema for user deletion
 export const DeleteUserResponseSchema = z.object({
-    deleted: z.uuid(),
+    deleted: z.number().int().positive(),
     deleted_at: z.date(),
 });
 

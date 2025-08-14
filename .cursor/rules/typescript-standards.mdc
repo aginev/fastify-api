@@ -28,6 +28,12 @@ This rule defines the TypeScript coding standards and best practices for the pro
 - **Use `unknown`** instead of `any` when type is truly unknown
 - **Leverage type inference** where types are obvious
 
+### **Database ID Patterns**
+- **Primary Keys**: Use `z.bigint().positive()` for auto-incrementing IDs
+- **Route Parameters**: Use `z.coerce.number().int().positive()` for ID validation
+- **ID Types**: Always use `bigint` for database IDs, `number` for route params
+- **Validation**: Ensure IDs are positive integers with proper error messages
+
 ### **Interfaces vs Types**
 - **Use interfaces** for object shapes and contracts
 - **Use types** for unions, intersections, and complex type operations
@@ -83,13 +89,13 @@ This rule defines the TypeScript coding standards and best practices for the pro
 ### **Good TypeScript Code:**
 ```typescript
 interface User {
-    id: string;
+    id: bigint;           // ✅ BIGINT for database IDs
     name: string;
     email: string;
 }
 
 class UserService {
-    async getUserById(id: string): Promise<User | null> {
+    async getUserById(id: number): Promise<User | null> {  // ✅ number for route params
         // Implementation
     }
 }

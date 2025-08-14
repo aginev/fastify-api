@@ -1,0 +1,186 @@
+# Database Standards
+
+This rule defines database design patterns, schema conventions, and data access patterns for the project.
+
+## 🗄️ **Database Technology**
+
+### **MariaDB 11.2**
+- **Container**: Docker-based development database
+- **Port**: 3306 (localhost)
+- **Credentials**: `db_user`/`db_pass` (application), `root`/`db_pass` (admin)
+- **Database**: `api`
+
+### **Connection Details**
+```bash
+# Application connection
+Host: localhost:3306
+Database: api
+Username: db_user
+Password: db_pass
+
+# Admin connection
+Username: root
+Password: db_pass
+```
+
+## 🏗️ **Schema Design Patterns**
+
+### **Primary Keys**
+- **Always use**: `BIGINT UNSIGNED AUTO_INCREMENT`
+- **Benefits**: Performance, storage efficiency, auto-generation
+- **Range**: 0 to 18,446,744,073,709,551,615 (18+ quintillion records)
+
+### **Timestamps**
+- **`created_at`**: `TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`
+- **`updated_at`**: `TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
+- **`deleted_at`**: `TIMESTAMP NULL DEFAULT NULL` (for soft deletes)
+
+### **Character Sets**
+- **Default**: `utf8mb4` with `utf8mb4_unicode_ci` collation
+- **Benefits**: Full Unicode support, emoji support, international characters
+
+### **Indexing Strategy**
+- **Primary Key**: Always indexed automatically
+- **Foreign Keys**: Index all foreign key columns
+- **Soft Deletes**: Index `deleted_at` for efficient filtering
+- **Search Fields**: Index frequently searched columns (email, name)
+
+## 📊 **Table Structure Example**
+
+```sql
+CREATE TABLE `users` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'User ID',
+    `first_name` VARCHAR(100) NOT NULL COMMENT 'User first name',
+    `last_name` VARCHAR(100) NOT NULL COMMENT 'User last name',
+    `email` VARCHAR(255) NOT NULL COMMENT 'User email address',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete timestamp',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_email` (`email`),
+    KEY `idx_deleted_at` (`deleted_at`),
+    KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Application users table';
+```
+
+## 🔐 **User Management**
+
+### **Application User**
+- **Username**: `db_user`
+- **Permissions**: Full access to `api` database
+- **Host**: Any host (`%`)
+- **Use Case**: Application database operations
+
+### **Root User**
+- **Username**: `root`
+- **Permissions**: Full server access
+- **Host**: Any host (`%`)
+- **Use Case**: Database administration, schema changes
+
+## 🚀 **Development Workflow**
+
+### **Database Commands**
+```bash
+# Start database
+pnpm db:up
+
+# View logs
+pnpm db:logs
+
+# Access database shell
+pnpm db:shell
+
+# Stop database
+pnpm db:down
+
+# Reset database (fresh start)
+pnpm db:reset
+```
+
+### **Schema Changes**
+1. **Update initialization script** in `docker/mariadb/init/01-init.sql`
+2. **Reset database** with `pnpm db:reset`
+3. **Test new schema** with sample data
+4. **Update Zod schemas** in `src/models/`
+5. **Update TypeScript types** as needed
+
+## 📝 **Naming Conventions**
+
+### **Tables**
+- **Plural nouns**: `users`, `products`, `orders`
+- **Snake case**: `user_profiles`, `order_items`
+- **Descriptive names**: `user_authentication_logs`
+
+### **Columns**
+- **Snake case**: `first_name`, `created_at`, `is_active`
+- **Boolean flags**: `is_active`, `has_permission`, `is_deleted`
+- **Timestamps**: `created_at`, `updated_at`, `deleted_at`
+
+### **Indexes**
+- **Primary**: Automatically named
+- **Unique**: `uk_` prefix (e.g., `uk_email`)
+- **Regular**: `idx_` prefix (e.g., `idx_deleted_at`)
+- **Foreign key**: `fk_` prefix (e.g., `fk_user_id`)
+
+## 🔍 **Query Patterns**
+
+### **Soft Delete Queries**
+```sql
+-- Get active users only
+SELECT * FROM users WHERE deleted_at IS NULL;
+
+-- Get all users including deleted
+SELECT * FROM users;
+
+-- Get only deleted users
+SELECT * FROM users WHERE deleted_at IS NOT NULL;
+```
+
+### **Pagination**
+```sql
+-- Offset-based pagination
+SELECT * FROM users 
+WHERE deleted_at IS NULL 
+ORDER BY created_at DESC 
+LIMIT 20 OFFSET 40;
+
+-- Cursor-based pagination (better for large datasets)
+SELECT * FROM users 
+WHERE deleted_at IS NULL 
+  AND id < ? 
+ORDER BY id DESC 
+LIMIT 20;
+```
+
+## 🚨 **Best Practices**
+
+### **Performance**
+- **Use indexes** on frequently queried columns
+- **Limit result sets** with pagination
+- **Avoid SELECT *** in production queries
+- **Use appropriate data types** (VARCHAR vs TEXT)
+
+### **Security**
+- **Parameterized queries** to prevent SQL injection
+- **Principle of least privilege** for database users
+- **Regular credential rotation** in production
+- **Audit logging** for sensitive operations
+
+### **Maintenance**
+- **Regular backups** of development data
+- **Monitor log files** for errors and slow queries
+- **Clean up old data** periodically
+- **Update database version** when needed
+
+## 🔗 **Related Rules**
+- [Project Structure](mdc:.cursor/rules/project-structure.mdc)
+- [TypeScript Standards](mdc:.cursor/rules/typescript-standards.mdc)
+- [Error Handling Standards](mdc:.cursor/rules/error-handling.mdc)
+description: Database design patterns, schema conventions, and data access patterns
+globs: ["**/*.sql", "**/*.ts", "docker/**/*"]
+alwaysApply: false
+---
+description:
+globs:
+alwaysApply: false
+---

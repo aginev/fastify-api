@@ -14,3 +14,7 @@ node_modules
 !.vscode/extensions.json
 !.vscode/tasks.json
 !.vscode/launch.json
+
+# Docker
+docker/mariadb/logs/*
+docker/mariadb/logs/.gitkeep
