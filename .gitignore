@@ -1,3 +1,16 @@
 node_modules
 /.env
 /dist
+
+# JetBrains
+.idea/
+*.iml
+
+# VS Code: ignore all by default…
+.vscode/*
+
+# …then allowlist shared workspace files
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
