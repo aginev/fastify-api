@@ -1,0 +1,67 @@
+# Cursor Rules Index
+
+This is the master index for all project rules. Each rule focuses on a specific aspect of the codebase and includes cross-references to related rules.
+
+## 📚 **Available Rules**
+
+### **🏗️ [Project Structure](mdc:.cursor/rules/project-structure.mdc)**
+- **Purpose:** Overall codebase organization and file architecture
+- **Scope:** Entry points, configuration, types, error handling, utilities, routes
+- **Key Topics:** Domain-based routing, request tracking, structured logging, error handling, environment validation
+- **Cross-References:** TypeScript Standards, Error Handling Standards, Routing Standards, Logging Standards
+
+### **🔧 [TypeScript Standards](mdc:.cursor/rules/typescript-standards.mdc)**
+- **Purpose:** TypeScript coding patterns and type definitions
+- **Scope:** Import patterns, type definitions, Fastify integration, error handling, async/await
+- **Key Topics:** Type imports, custom types, Fastify interfaces, error classes, hook handlers
+- **Cross-References:** Project Structure, Error Handling Standards, Routing Standards, Logging Standards
+
+### **🚨 [Error Handling Standards](mdc:.cursor/rules/error-handling.mdc)**
+- **Purpose:** Error handling architecture and patterns
+- **Scope:** Custom error classes, error handlers, log level mapping, error responses, process-level handling
+- **Key Topics:** AppError class, error context, status code mapping, graceful shutdown, request correlation
+- **Cross-References:** Project Structure, TypeScript Standards, Logging Standards, Routing Standards
+
+### **🛣️ [Routing Standards](mdc:.cursor/rules/routing-standards.mdc)**
+- **Purpose:** Route organization and Fastify plugin usage
+- **Scope:** Domain-based routing, route registration, handlers, health checks, plugins, request context
+- **Key Topics:** Route prefixes, Fastify plugins, health endpoints, AsyncLocalStorage, request IDs
+- **Cross-References:** Project Structure, TypeScript Standards, Error Handling Standards, Logging Standards
+
+### **📝 [Logging Standards](mdc:.cursor/rules/logging-standards.mdc)**
+- **Purpose:** Logging configuration and strategies
+- **Scope:** Pino configuration, log levels, structured logging, data redaction, error logging, process logging
+- **Key Topics:** Log level mapping, sensitive data, structured logs, request context, graceful shutdown
+- **Cross-References:** Project Structure, Error Handling Standards, TypeScript Standards, Routing Standards
+
+## 🔗 **Rule Relationships**
+
+```
+Project Structure
+    ↕️
+TypeScript Standards ←→ Error Handling Standards
+    ↕️                    ↕️
+Routing Standards ←→ Logging Standards
+```
+
+## 🎯 **How to Use These Rules**
+
+1. **Start with Project Structure** - Understand the overall architecture
+2. **Reference TypeScript Standards** - Follow coding patterns
+3. **Apply Error Handling Standards** - Implement robust error management
+4. **Use Routing Standards** - Organize routes and plugins
+5. **Follow Logging Standards** - Implement structured logging
+
+## 🚀 **Quick Reference**
+
+- **Need to add a new route?** → Check Routing Standards
+- **Implementing error handling?** → Check Error Handling Standards
+- **Adding new types?** → Check TypeScript Standards
+- **Configuring logging?** → Check Logging Standards
+- **Understanding architecture?** → Check Project Structure
+
+Each rule is designed to work independently while providing cross-references for comprehensive understanding.
+description:
+globs:
+alwaysApply: false
+---

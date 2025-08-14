@@ -1,0 +1,43 @@
+# Development Workflow
+
+## Package Scripts
+- `pnpm dev` - Development server with hot reload using `tsx watch`
+- `pnpm debug` - Debug server with `tsx --inspect`
+- `pnpm debug:watch` - Debug with auto-restart using nodemon
+- `pnpm typecheck` - TypeScript compilation check
+- `pnpm lint` - ESLint code quality check
+- `pnpm format` - Prettier code formatting
+
+## Debugging Setup
+- VS Code debugging configurations in [.vscode/launch.json](mdc:.vscode/launch.json)
+- Use "Debug with tsx" for direct TypeScript debugging
+- Use "Attach to tsx Process" for attaching to running processes
+- Source maps enabled for proper breakpoint binding
+
+## Code Quality Tools
+- ESLint v9 configuration in [eslint.config.js](mdc:eslint.config.js)
+- Prettier formatting rules in [.prettierrc](mdc:.prettierrc)
+- TypeScript strict mode enabled in [tsconfig.json](mdc:tsconfig.json)
+- Pre-commit checks: `pnpm check` runs typecheck, lint, and format
+
+## Environment Configuration
+- Environment variables validated with Zod in [src/config.ts](mdc:src/config.ts)
+- Default values for development: `NODE_ENV`, `PORT`, `GREETING`
+- Use `env.PORT` and `env.NODE_ENV` throughout the application
+- Load environment with `dotenv/config` in [src/index.ts](mdc:src/index.ts)
+
+## Hot Reload Strategy
+- Development: `tsx watch` for immediate file changes
+- Debugging: `nodemon` with `tsx --inspect` for source map refresh
+- Production: Build and run compiled JavaScript
+- Graceful shutdown handling for development restarts
+
+## Code Organization
+- Keep related functionality in domain-specific files
+- Use barrel exports for clean imports
+- Separate concerns: error handling, logging, routing, configuration
+- Follow single responsibility principle for each module
+description:
+globs:
+alwaysApply: false
+---

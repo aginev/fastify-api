@@ -1,0 +1,45 @@
+# Project Structure Guide
+
+This is a Node.js/Fastify API server with TypeScript, ESM modules, and robust error handling.
+
+## Core Architecture
+
+### Entry Points
+- [src/index.ts](mdc:src/index.ts) - Main application entry point, handles process events and graceful shutdown
+- [src/server.ts](mdc:src/server.ts) - Fastify instance configuration, global hooks, error handlers, and server startup
+
+### Configuration & Types
+- [src/config.ts](mdc:src/config.ts) - Environment variable validation using Zod
+- [src/types.ts](mdc:src/types.ts) - Global type aliases and Fastify interface augmentation
+- [src/context.ts](mdc:src/context.ts) - Request-scoped context management using AsyncLocalStorage
+
+### Error Handling
+- [src/error.ts](mdc:src/error.ts) - Custom AppError class implementing FastifyError with context support
+
+### Utilities
+- [src/utils/logging.ts](mdc:src/utils/logging.ts) - Log level mapping and logging utilities
+
+### Route Organization
+- [src/routes/index.ts](mdc:src/routes/index.ts) - Main router that registers all domain-specific routes
+- [src/routes/health.ts](mdc:src/routes/health.ts) - Health check endpoints (/live, /ready, /debug)
+- [src/routes/users.ts](mdc:src/routes/users.ts) - User domain routes (CRUD operations)
+- [src/routes/products.ts](mdc:src/routes/products.ts) - Product domain routes
+- [src/routes/orders.ts](mdc:src/routes/orders.ts) - Order domain routes
+- [src/routes/root.ts](mdc:src/routes/root.ts) - Root endpoint (/)
+
+## Key Patterns
+- Domain-based route organization with prefixes
+- Request ID tracking via x-request-id header
+- Structured logging with Pino
+- Type-safe error handling with custom AppError class
+- Environment validation with Zod schemas
+
+## Related Rules
+- **TypeScript Standards** - Coding patterns and type definitions
+- **Error Handling Standards** - Error handling architecture and patterns
+- **Routing Standards** - Route organization and Fastify plugin usage
+- **Logging Standards** - Logging configuration and strategies
+description:
+globs:
+alwaysApply: false
+---

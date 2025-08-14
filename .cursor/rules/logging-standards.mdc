@@ -1,0 +1,54 @@
+# Logging Standards
+
+## Pino Configuration
+- Logger configured in [src/server.ts](mdc:src/server.ts) with transport and redact options
+- Development: Use `pino-pretty` for readable console output
+- Production: Use default JSON format
+- Include request ID in all logs via `mixin()` function
+
+## Log Level Strategy
+- Dynamic log levels based on HTTP status codes in [src/utils/logging.ts](mdc:src/utils/logging.ts)
+- 500+ (Server Errors): `fatal` - Critical system failures
+- 400-499 (Client Errors): `error` - Client request issues
+- 300-399 (Redirects): `warn` - Informational redirects
+- 200-299 (Success): Should not reach error handler
+
+## Structured Logging
+- Always log objects with consistent structure
+- Include request context: `requestId`, `url`, `method`, `userAgent`, `timestamp`
+- Include error details: `message`, `code`, `statusCode`, `stack`, `context`
+- Use descriptive log messages: `'Unhandled error'`, `'Graceful shutdown'`
+
+## Sensitive Data Redaction
+- Redact sensitive headers: `authorization`, `cookie`, `set-cookie`
+- Use Pino's built-in redact functionality
+- Never log passwords, tokens, or personal information
+- Reference redact paths in logger configuration
+
+## Error Logging Pattern
+```typescript
+const logLevel: LogLevel = getLogLevel(error.statusCode);
+const logData = { request, error };
+
+try {
+  (app.log as any)[logLevel](logData, 'Unhandled error');
+} catch (logError) {
+  app.log.error(logData, 'Unhandled error (fallback)');
+}
+```
+
+## Process-Level Logging
+- Log startup and shutdown events in [src/index.ts](mdc:src/index.ts)
+- Include signal information for graceful shutdown
+- Log uncaught exceptions and unhandled rejections
+- Use request ID correlation when available
+
+## Related Rules
+- **Project Structure** - Logging file locations and configuration
+- **Error Handling Standards** - Error logging patterns and context
+- **TypeScript Standards** - Logging type safety and interfaces
+- **Routing Standards** - Request context in logging
+description:
+globs:
+alwaysApply: false
+---

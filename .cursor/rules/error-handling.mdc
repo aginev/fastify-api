@@ -1,0 +1,47 @@
+# Error Handling Standards
+
+## Custom Error Classes
+- Extend `Error` class and implement `FastifyError` interface
+- Include required properties: `statusCode: number`, `code: string`
+- Add custom context: `context: Record<string, unknown>`
+- Reference: [src/error.ts](mdc:src/error.ts)
+
+## Error Handler Structure
+- Global error handler in [src/server.ts](mdc:src/server.ts) catches all unhandled errors
+- Extract request context: `requestId`, `url`, `method`, `userAgent`, `timestamp`
+- Extract error details: `message`, `code`, `statusCode`, `stack`, `context`
+- Use dynamic log levels based on HTTP status codes
+
+## Log Level Mapping
+- 500+ (Server Errors): `fatal` level
+- 400-499 (Client Errors): `error` level  
+- 300-399 (Redirects): `warn` level
+- Reference: [src/utils/logging.ts](mdc:src/utils/logging.ts)
+
+## Error Response Patterns
+- 4XX errors: Return "Client Error" message
+- 5XX errors: Return "Internal Server Error" message
+- Always include: `error`, `code`, `requestId`
+- Never expose internal server details to clients
+
+## Process-Level Error Handling
+- Handle `uncaughtException` and `unhandledRejection` in [src/index.ts](mdc:src/index.ts)
+- Use `getRequestId()` from context for correlation
+- Graceful shutdown with timeout safety net
+- Process exit on critical failures
+
+## Error Context Management
+- Use `AppError` instances to carry additional context
+- Extract context safely: `err instanceof AppError ? err.context : {}`
+- Sanitize sensitive information before logging
+- Maintain request correlation via `x-request-id` header
+
+## Related Rules
+- **Project Structure** - Error handling file locations and architecture
+- **TypeScript Standards** - Error class implementation and interfaces
+- **Logging Standards** - Error logging patterns and log level mapping
+- **Routing Standards** - Error handler integration in Fastify
+description:
+globs:
+alwaysApply: false
+---

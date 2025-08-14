@@ -1,0 +1,40 @@
+# TypeScript Standards
+
+## Import Patterns
+- Use `import type` for type-only imports: `import type { FastifyRequest, FastifyReply } from 'fastify'`
+- Use explicit imports for values: `import { AppError } from './error'`
+- Import types and values separately: `import { AppError, type LogLevel } from './error'`
+
+## Type Definitions
+- Define custom types in [src/types.ts](mdc:src/types.ts) for global use
+- Use `export type` for type exports: `export type Request = FastifyRequest`
+- Implement interfaces rather than extending classes when possible
+- Use union types for constrained values: `export type LogLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug'`
+
+## Fastify Integration
+- Augment Fastify interfaces using `declare module 'fastify'`
+- Use `FastifyInstance`, `FastifyRequest`, `FastifyReply` types consistently
+- Implement `FastifyError` interface for custom error classes
+- Use `HookHandlerDoneFunction` for hook callbacks
+
+## Error Handling
+- Extend `Error` class and implement `FastifyError` interface
+- Include required properties: `statusCode`, `code`
+- Use custom context interfaces for additional error data
+- Cast request body safely: `req.body as Record<string, unknown>`
+
+## Async/Await
+- Use async/await consistently in route handlers
+- Return Promise types explicitly when needed
+- Handle errors with try-catch blocks
+- Use `HookHandlerDoneFunction` for synchronous hooks
+
+## Related Rules
+- **Project Structure** - Understanding the overall codebase organization
+- **Error Handling Standards** - Type-safe error handling patterns
+- **Routing Standards** - Route handler TypeScript patterns
+- **Logging Standards** - Type-safe logging implementations
+description:
+globs:
+alwaysApply: false
+---

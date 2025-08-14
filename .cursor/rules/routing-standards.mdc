@@ -1,0 +1,49 @@
+# Routing Standards
+
+## Route Organization
+- Use domain-based routing structure in [src/routes/](mdc:src/routes/) directory
+- Register all routes through [src/routes/index.ts](mdc:src/routes/index.ts)
+- Use descriptive prefixes: `/health`, `/users`, `/products`, `/orders`
+- Keep routes focused on single domain responsibility
+
+## Route Registration Pattern
+```typescript
+export async function registerRoutes(app: FastifyInstance) {
+  await app.register(rootRoutes);
+  await app.register(healthRoutes, { prefix: '/health' });
+  await app.register(userRoutes, { prefix: '/users' });
+}
+```
+
+## Route Handler Standards
+- Use `app: FastifyInstance` parameter (not `fastify`)
+- Import types from [src/types.ts](mdc:src/types.ts): `Request`, `Reply`
+- Use async/await consistently
+- Return response data or use `reply.send()`
+
+## Health Check Endpoints
+- `/health/live` - Basic liveness check
+- `/health/ready` - Readiness check using `app.isReady`
+- `/health/debug` - Request context inspection
+- Reference: [src/routes/health.ts](mdc:src/routes/health.ts)
+
+## Fastify Plugin Integration
+- Core plugins registered in `start()` function: `sensible`, `helmet`, `cors`, `underPressure`
+- Use `app.decorate()` for custom properties: `app.decorate('isReady', false)`
+- Implement `onClose` hooks for cleanup: `app.addHook('onClose', ...)`
+
+## Request Context Management
+- Use `setContext()` from [src/context.ts](mdc:src/context.ts) in `onRequest` hook
+- Set `x-request-id` header for client correlation
+- Store request ID in AsyncLocalStorage for lifecycle access
+- Access context via `getRequestId()` and `getContext()`
+
+## Related Rules
+- **Project Structure** - Route organization and file structure
+- **TypeScript Standards** - Route handler type definitions
+- **Error Handling Standards** - Error handling in route handlers
+- **Logging Standards** - Request context in logging
+description:
+globs:
+alwaysApply: false
+---
