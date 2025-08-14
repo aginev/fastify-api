@@ -9,7 +9,12 @@ export class AppError extends Error implements FastifyError, ErrorContext {
     public code: string;
     public context: Record<string, unknown> = {};
 
-    constructor(message: string, statusCode: number, code: string, context: Record<string, unknown> = {}) {
+    constructor(
+        message: string,
+        statusCode: number,
+        code: string,
+        context: Record<string, unknown> = {}
+    ) {
         super(message);
 
         this.statusCode = statusCode;
@@ -17,4 +22,3 @@ export class AppError extends Error implements FastifyError, ErrorContext {
         this.context = context;
     }
 }
-

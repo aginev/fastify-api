@@ -34,7 +34,7 @@ class GenericErrorHandler implements ErrorHandler {
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
             stack: err.stack,
-            context: {}
+            context: {},
         };
     }
 
@@ -42,7 +42,7 @@ class GenericErrorHandler implements ErrorHandler {
         return {
             error: 'Internal Server Error',
             code: errorInfo.code,
-            context: errorInfo.context
+            context: errorInfo.context,
         };
     }
 }
@@ -62,9 +62,9 @@ class ZodErrorHandler implements ErrorHandler {
                 validation: err.issues.map(issue => ({
                     field: issue.path.join('.'),
                     message: issue.message,
-                    received: (issue as any).received
-                }))
-            }
+                    received: (issue as any).received,
+                })),
+            },
         };
     }
 
@@ -72,7 +72,7 @@ class ZodErrorHandler implements ErrorHandler {
         return {
             error: 'Validation Error',
             code: errorInfo.code,
-            context: errorInfo.context
+            context: errorInfo.context,
         };
     }
 }
@@ -88,7 +88,7 @@ class AppErrorHandler implements ErrorHandler {
             code: err.code,
             message: err.message,
             stack: err.stack,
-            context: err.context
+            context: err.context,
         };
     }
 
@@ -96,7 +96,7 @@ class AppErrorHandler implements ErrorHandler {
         return {
             error: 'Application Error',
             code: errorInfo.code,
-            context: errorInfo.context
+            context: errorInfo.context,
         };
     }
 }
@@ -112,7 +112,7 @@ class FastifyErrorHandler implements ErrorHandler {
             code: (err as any).code || 'INTERNAL_SERVER_ERROR',
             message: err.message,
             stack: err.stack,
-            context: {}
+            context: {},
         };
     }
 
@@ -120,7 +120,7 @@ class FastifyErrorHandler implements ErrorHandler {
         return {
             error: 'Server Error',
             code: errorInfo.code,
-            context: errorInfo.context
+            context: errorInfo.context,
         };
     }
 }
@@ -155,7 +155,7 @@ export function createErrorHandler(app: FastifyInstance) {
             url: req.url,
             method: req.method,
             userAgent: req.headers['user-agent'],
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         };
 
         // Find appropriate handler and process error
@@ -168,12 +168,20 @@ export function createErrorHandler(app: FastifyInstance) {
         const logData = { request, error: { ...errorInfo } };
 
         try {
-            (app.log as any)[logLevel](logData, `${handler.constructor.name} error`);
+            (app.log as any)[logLevel](
+                logData,
+                `${handler.constructor.name} error`
+            );
         } catch (logError) {
-            app.log.error(logData, `${handler.constructor.name} error (fallback)`);
+            app.log.error(
+                logData,
+                `${handler.constructor.name} error (fallback)`
+            );
         }
 
         // Send response
-        reply.status(errorInfo.statusCode).send({ requestId: req.id, ...response });
+        reply
+            .status(errorInfo.statusCode)
+            .send({ requestId: req.id, ...response });
     };
 }

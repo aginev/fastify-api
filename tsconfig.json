@@ -1,17 +1,25 @@
 {
     "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
-  },
-  "include": ["src"],
-  "allowJs": true,
-  "checkJs": true
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "rootDir": "src",
+        "outDir": "dist",
+        "sourceMap": true,
+        "verbatimModuleSyntax": true,
+        "types": [
+            "node"
+        ],
+        "allowJs": true,
+        "checkJs": true
+    },
+    "include": [
+        "src"
+    ]
 }

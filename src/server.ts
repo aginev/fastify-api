@@ -1,4 +1,8 @@
-import Fastify, { FastifyError, FastifyInstance, HookHandlerDoneFunction } from 'fastify';
+import Fastify, {
+    FastifyError,
+    FastifyInstance,
+    HookHandlerDoneFunction,
+} from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { IncomingMessage } from 'node:http';
 import { createErrorHandler, createRequestContextHook } from './middleware';
@@ -13,16 +17,17 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { registerRoutes } from './routes';
 
 const port = env.PORT;
-const transport = env.NODE_ENV === 'development'
-    ? {
-        target: 'pino-pretty',
-        options: {
-            singleLine: true,
-            colorize: true,
-            translateTime: 'SYS:standard',
-        },
-    }
-    : undefined;
+const transport =
+    env.NODE_ENV === 'development'
+        ? {
+              target: 'pino-pretty',
+              options: {
+                  singleLine: true,
+                  colorize: true,
+                  translateTime: 'SYS:standard',
+              },
+          }
+        : undefined;
 const options = {
     // Pino config
     logger: {
@@ -95,10 +100,13 @@ export async function start() {
 }
 
 // Ensure readiness returns false during shutdown sequence
-app.addHook('onClose', (_instance: FastifyInstance, done: HookHandlerDoneFunction) => {
-    app.isReady = false;
+app.addHook(
+    'onClose',
+    (_instance: FastifyInstance, done: HookHandlerDoneFunction) => {
+        app.isReady = false;
 
-    done();
-});
+        done();
+    }
+);
 
 export default app;

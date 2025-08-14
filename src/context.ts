@@ -8,4 +8,5 @@ const context = new AsyncLocalStorage<Store>();
 
 export const getRequestId = () => context.getStore()?.requestId;
 export const getContext = () => context.getStore();
-export const setContext = (store: Store, done: () => void) => context.run(store, done);
+export const setContext = (store: Store, done: () => void) =>
+    context.run(store, done);

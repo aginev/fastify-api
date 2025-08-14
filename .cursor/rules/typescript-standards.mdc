@@ -1,40 +1,118 @@
 # TypeScript Standards
 
-## Import Patterns
-- Use `import type` for type-only imports: `import type { FastifyRequest, FastifyReply } from 'fastify'`
-- Use explicit imports for values: `import { AppError } from './error'`
-- Import types and values separately: `import { AppError, type LogLevel } from './error'`
+This rule defines the TypeScript coding standards and best practices for the project.
 
-## Type Definitions
-- Define custom types in [src/types.ts](mdc:src/types.ts) for global use
-- Use `export type` for type exports: `export type Request = FastifyRequest`
-- Implement interfaces rather than extending classes when possible
-- Use union types for constrained values: `export type LogLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug'`
+## 📝 **Code Formatting**
 
-## Fastify Integration
-- Augment Fastify interfaces using `declare module 'fastify'`
-- Use `FastifyInstance`, `FastifyRequest`, `FastifyReply` types consistently
-- Implement `FastifyError` interface for custom error classes
-- Use `HookHandlerDoneFunction` for hook callbacks
+### **Indentation**
+- **Always use 4 spaces** for indentation (never tabs)
+- **Consistent indentation** throughout all files
+- **No mixed indentation** (spaces + tabs)
 
-## Error Handling
-- Extend `Error` class and implement `FastifyError` interface
-- Include required properties: `statusCode`, `code`
-- Use custom context interfaces for additional error data
-- Cast request body safely: `req.body as Record<string, unknown>`
+### **Line Length**
+- **Maximum line length**: 120 characters
+- **Break long lines** at logical points
+- **Use line breaks** for readability
 
-## Async/Await
-- Use async/await consistently in route handlers
-- Return Promise types explicitly when needed
-- Handle errors with try-catch blocks
-- Use `HookHandlerDoneFunction` for synchronous hooks
+### **Spacing**
+- **Single space** around operators
+- **Single space** after commas
+- **No trailing spaces**
+- **Single blank line** between logical sections
 
-## Related Rules
-- **Project Structure** - Understanding the overall codebase organization
-- **Error Handling Standards** - Type-safe error handling patterns
-- **Routing Standards** - Route handler TypeScript patterns
-- **Logging Standards** - Type-safe logging implementations
-description:
-globs:
-alwaysApply: false
----
+## 🏗️ **TypeScript Best Practices**
+
+### **Type Safety**
+- **Always use explicit types** for function parameters and return values
+- **Avoid `any` type** - use proper TypeScript types
+- **Use `unknown`** instead of `any` when type is truly unknown
+- **Leverage type inference** where types are obvious
+
+### **Interfaces vs Types**
+- **Use interfaces** for object shapes and contracts
+- **Use types** for unions, intersections, and complex type operations
+- **Extend interfaces** rather than creating new ones when possible
+
+### **Import/Export**
+- **Use named imports/exports** for better tree-shaking
+- **Use `import type`** for type-only imports
+- **Group imports** by: external libraries, internal modules, types
+- **Alphabetical order** within each group
+
+### **Error Handling**
+- **Extend Error class** for custom errors
+- **Implement proper interfaces** (FastifyError, etc.)
+- **Use type guards** for runtime type checking
+- **Avoid type assertions** when possible
+
+## 📁 **File Organization**
+
+### **File Naming**
+- **kebab-case** for file names: `user-model.ts`
+- **PascalCase** for classes: `UserModel`
+- **camelCase** for functions and variables: `getUserById`
+
+### **Export Patterns**
+- **Named exports** for most cases
+- **Default exports** only for main entry points
+- **Barrel exports** in index files
+
+## 🧪 **Testing Standards**
+
+### **Test Files**
+- **Test file naming**: `*.test.ts` or `*.spec.ts`
+- **Test organization**: Arrange, Act, Assert pattern
+- **Mock external dependencies**
+- **Test both success and failure cases**
+
+## 🔍 **Code Quality**
+
+### **ESLint Rules**
+- **Follow project ESLint configuration**
+- **Fix all linting errors** before committing
+- **Use meaningful variable names**
+- **Avoid magic numbers** - use constants
+
+### **Documentation**
+- **JSDoc comments** for public APIs
+- **Inline comments** for complex logic
+- **README files** for modules and packages
+
+## 📚 **Examples**
+
+### **Good TypeScript Code:**
+```typescript
+interface User {
+    id: string;
+    name: string;
+    email: string;
+}
+
+class UserService {
+    async getUserById(id: string): Promise<User | null> {
+        // Implementation
+    }
+}
+
+export { UserService };
+export type { User };
+```
+
+### **Avoid:**
+```typescript
+// ❌ Bad: No types, any usage
+function getUser(id: any): any {
+    return db.users.find(u => u.id === id);
+}
+
+// ❌ Bad: Mixed indentation
+function badFunction() {
+  const x = 1;
+    const y = 2;
+}
+```
+
+## 🔗 **Related Rules**
+- [Project Structure](mdc:.cursor/rules/project-structure.mdc)
+- [Error Handling Standards](mdc:.cursor/rules/error-handling.mdc)
+- [Development Workflow](mdc:.cursor/rules/development-workflow.mdc)

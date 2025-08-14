@@ -3,12 +3,7 @@ import type { Request, Reply } from '../types';
 import {
     CreateUserSchema,
     UpdateUserSchema,
-    UserParamsSchema,
-    SoftDeleteUserSchema,
-    type CreateUserInput,
-    type UpdateUserInput,
-    type UserParams,
-    type SoftDeleteUserInput
+    UserParamsSchema
 } from '../models/user.model';
 
 export async function userRoutes(app: FastifyInstance) {
@@ -32,7 +27,7 @@ export async function userRoutes(app: FastifyInstance) {
             email: 'john.doe@example.com',
             created_at: new Date(),
             updated_at: new Date(),
-            deleted_at: null
+            deleted_at: null,
         };
 
         return reply.send({ user });
@@ -49,7 +44,7 @@ export async function userRoutes(app: FastifyInstance) {
             ...userData,
             created_at: new Date(),
             updated_at: new Date(),
-            deleted_at: null
+            deleted_at: null,
         };
 
         return reply.code(201).send({ user: newUser });
@@ -69,7 +64,7 @@ export async function userRoutes(app: FastifyInstance) {
             email: userData.email || 'john.doe@example.com',
             created_at: new Date(),
             updated_at: new Date(),
-            deleted_at: null
+            deleted_at: null,
         };
 
         return reply.send({ user: updatedUser });
@@ -84,7 +79,7 @@ export async function userRoutes(app: FastifyInstance) {
         const deletedAt = new Date();
         return reply.send({
             deleted: params.id,
-            deleted_at: deletedAt
+            deleted_at: deletedAt,
         });
     });
 
@@ -101,7 +96,7 @@ export async function userRoutes(app: FastifyInstance) {
             email: 'john.doe@example.com',
             created_at: new Date(),
             updated_at: new Date(),
-            deleted_at: null
+            deleted_at: null,
         };
 
         return reply.send({ user: restoredUser });
@@ -114,7 +109,7 @@ export async function userRoutes(app: FastifyInstance) {
 
         // TODO: Implement hard delete: DELETE FROM users WHERE id = ?
         return reply.send({
-            permanently_deleted: params.id
+            permanently_deleted: params.id,
         });
     });
 }

@@ -14,7 +14,9 @@ export async function healthRoutes(app: FastifyInstance) {
     });
 
     // Legacy alias
-    app.get('/', async (_req: Request, reply: Reply) => reply.send({ ok: true }));
+    app.get('/', async (_req: Request, reply: Reply) =>
+        reply.send({ ok: true })
+    );
 
     // Debug endpoint to show context
     app.get('/debug', async (_req: Request, reply: Reply) => {
@@ -24,7 +26,7 @@ export async function healthRoutes(app: FastifyInstance) {
         return reply.send({
             requestId,
             context,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     });
 }
