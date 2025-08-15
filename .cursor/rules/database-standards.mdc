@@ -53,6 +53,7 @@ CREATE TABLE `users` (
     `first_name` VARCHAR(100) NOT NULL COMMENT 'User first name',
     `last_name` VARCHAR(100) NOT NULL COMMENT 'User last name',
     `email` VARCHAR(255) NOT NULL COMMENT 'User email address',
+    `password` VARCHAR(255) NOT NULL COMMENT 'User password hash',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
     `deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete timestamp',
@@ -76,6 +77,13 @@ CREATE TABLE `users` (
 - **Permissions**: Full server access
 - **Host**: Any host (`%`)
 - **Use Case**: Database administration, schema changes
+
+### **Password Storage**
+- **Field**: `password` VARCHAR(255) NOT NULL
+- **Format**: Bcrypt hash (e.g., `$2b$10$...`)
+- **Validation**: Minimum 8 characters, mixed case, numbers, special chars
+- **Security**: Never store plain text passwords
+- **Migration**: Use `02-add-password-column.sql` for existing databases
 
 ## 🚀 **Development Workflow**
 
