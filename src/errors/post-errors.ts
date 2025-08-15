@@ -1,4 +1,4 @@
-import { AppError } from './base.js';
+import { AppError, type ErrorContextData } from './base.js';
 
 /**
  * PostError - Static factory for creating post-related errors
@@ -8,7 +8,7 @@ export class PostError extends AppError {
     /**
      * Post not found error
      */
-    static notFound(postId: number, context: Record<string, unknown> = {}): PostError {
+    static notFound(postId: number, context: ErrorContextData = {}): PostError {
         return new PostError(
             'Post not found',
             404,
@@ -20,7 +20,7 @@ export class PostError extends AppError {
     /**
      * Post creation failed error
      */
-    static creationFailed(context: Record<string, unknown> = {}): PostError {
+    static creationFailed(context: ErrorContextData = {}): PostError {
         return new PostError(
             'Failed to create post',
             500,
@@ -32,7 +32,7 @@ export class PostError extends AppError {
     /**
      * Post update failed error
      */
-    static updateFailed(postId: number, context: Record<string, unknown> = {}): PostError {
+    static updateFailed(postId: number, context: ErrorContextData = {}): PostError {
         return new PostError(
             'Failed to update post',
             500,
@@ -44,7 +44,7 @@ export class PostError extends AppError {
     /**
      * Post deletion failed error
      */
-    static deletionFailed(postId: number, context: Record<string, unknown> = {}): PostError {
+    static deletionFailed(postId: number, context: ErrorContextData = {}): PostError {
         return new PostError(
             'Failed to delete post',
             500,
@@ -56,7 +56,7 @@ export class PostError extends AppError {
     /**
      * Post already published error
      */
-    static alreadyPublished(postId: number, context: Record<string, unknown> = {}): PostError {
+    static alreadyPublished(postId: number, context: ErrorContextData = {}): PostError {
         return new PostError(
             'Post is already published',
             409,
@@ -68,7 +68,7 @@ export class PostError extends AppError {
     /**
      * Post not published error
      */
-    static notPublished(postId: number, context: Record<string, unknown> = {}): PostError {
+    static notPublished(postId: number, context: ErrorContextData = {}): PostError {
         return new PostError(
             'Post is not published',
             409,
@@ -80,7 +80,7 @@ export class PostError extends AppError {
     /**
      * Post already deleted error
      */
-    static alreadyDeleted(postId: number, context: Record<string, unknown> = {}): PostError {
+    static alreadyDeleted(postId: number, context: ErrorContextData = {}): PostError {
         return new PostError(
             'Post is already deleted',
             409,
@@ -92,7 +92,7 @@ export class PostError extends AppError {
     /**
      * Post not deleted error
      */
-    static notDeleted(postId: number, context: Record<string, unknown> = {}): PostError {
+    static notDeleted(postId: number, context: ErrorContextData = {}): PostError {
         return new PostError(
             'Post is not deleted',
             409,

@@ -52,7 +52,7 @@ export const userService = {
             }).filter(Boolean);
 
             if (conflicts.includes('email') && conflicts.includes('username')) {
-                throw UserError.alreadyExists('email', { email: userData.email, username: userData.username, reason: 'both email and username conflict' });
+                throw UserError.alreadyExists('email', { email: userData.email, username: userData.username, reason: 'Both email and username conflict' });
             } else if (conflicts.includes('email')) {
                 throw UserError.alreadyExists('email', { email: userData.email });
             } else if (conflicts.includes('username')) {

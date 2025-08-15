@@ -1,4 +1,4 @@
-import { AppError } from './base.js';
+import { AppError, type ErrorContextData } from './base.js';
 
 /**
  * UserError - Static factory for creating user-related errors
@@ -8,7 +8,7 @@ export class UserError extends AppError {
     /**
      * User not found error
      */
-    static notFound(userId: number, context: Record<string, unknown> = {}): UserError {
+    static notFound(userId: number, context: ErrorContextData = {}): UserError {
         return new UserError(
             'User not found',
             404,
@@ -20,7 +20,7 @@ export class UserError extends AppError {
     /**
      * User already exists error
      */
-    static alreadyExists(field: 'email' | 'username', context: Record<string, unknown> = {}): UserError {
+    static alreadyExists(field: 'email' | 'username', context: ErrorContextData = {}): UserError {
         return new UserError(
             'User already exists',
             409,
@@ -32,7 +32,7 @@ export class UserError extends AppError {
     /**
      * User creation failed error
      */
-    static creationFailed(context: Record<string, unknown> = {}): UserError {
+    static creationFailed(context: ErrorContextData = {}): UserError {
         return new UserError(
             'Failed to create user',
             500,
@@ -44,7 +44,7 @@ export class UserError extends AppError {
     /**
      * User update failed error
      */
-    static updateFailed(userId: number, context: Record<string, unknown> = {}): UserError {
+    static updateFailed(userId: number, context: ErrorContextData = {}): UserError {
         return new UserError(
             'Failed to update user',
             500,
@@ -56,7 +56,7 @@ export class UserError extends AppError {
     /**
      * User deletion failed error
      */
-    static deletionFailed(userId: number, context: Record<string, unknown> = {}): UserError {
+    static deletionFailed(userId: number, context: ErrorContextData = {}): UserError {
         return new UserError(
             'Failed to delete user',
             500,
@@ -68,7 +68,7 @@ export class UserError extends AppError {
     /**
      * Authentication failed error
      */
-    static authenticationFailed(context: Record<string, unknown> = {}): UserError {
+    static authenticationFailed(context: ErrorContextData = {}): UserError {
         return new UserError(
             'Authentication failed - invalid credentials',
             401,
@@ -80,7 +80,7 @@ export class UserError extends AppError {
     /**
      * Password update failed error
      */
-    static passwordUpdateFailed(userId: number, context: Record<string, unknown> = {}): UserError {
+    static passwordUpdateFailed(userId: number, context: ErrorContextData = {}): UserError {
         return new UserError(
             'Failed to update password',
             500,
