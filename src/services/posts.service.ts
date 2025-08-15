@@ -9,9 +9,16 @@ export const postService = {
      * Create a new post
      */
     async create(postData: NewPost): Promise<Post> {
-        await db.insert(posts).values(postData);
-        // For MySQL, we need to fetch the created post by title since we don't have insertId
-        const [post] = await db.select().from(posts).where(eq(posts.title, postData.title));
+        // Use $returningId() to get the inserted ID directly from MySQL
+        const result = await db.insert(posts).values(postData).$returningId();
+
+        // $returningId() returns an array of { id: number } objects
+        if (!result || result.length === 0) {
+            throw new Error('Failed to create post');
+        }
+
+        // Fetch the complete post data using the returned ID
+        const [post] = await db.select().from(posts).where(eq(posts.id, result[0].id));
 
         if (!post) {
             throw new Error('Failed to create post');

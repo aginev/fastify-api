@@ -91,6 +91,19 @@ export const userService = {
 - **Comprehensive Error Handling**: Clear feedback for all types of conflicts
 - **Reusable Helper Methods**: `areEmailAndUsernameAvailable()` for consistent validation
 
+### **Race Condition Protection**
+- **Service-Level Validation**: Primary uniqueness checks before database operations
+- **Database-Level Fallback**: Handles concurrent requests and race conditions
+- **Optimized Error Messages**: Generic but helpful messages for edge cases
+- **Defensive Programming**: Multiple layers of protection for data integrity
+
+### **MySQL $returningId() Optimization**
+- **Direct ID Retrieval**: Uses Drizzle ORM's `$returningId()` for MySQL autoincrement
+- **Eliminates Guesswork**: No need to fetch by email/username after insert
+- **Better Performance**: Single insert operation with immediate ID return
+- **Type Safety**: Returns properly typed `{ id: number }[]` array
+- **MySQL Specific**: Designed specifically for MySQL's autoincrement behavior
+
 ### **Password Hashing Service**
 ```typescript
 import bcrypt from 'bcrypt';
@@ -155,7 +168,16 @@ export const userService = {
             passwordHash: hashedPassword,
         };
 
-        await db.insert(users).values(userToCreate);
+        // Use $returningId() to get the inserted ID directly from MySQL
+        const result = await db.insert(users).values(userToCreate).$returningId();
+        
+        // $returningId() returns an array of { id: number } objects
+        if (!result || result.length === 0) {
+            throw new Error('Failed to create user');
+        }
+
+        // Fetch the complete user data using the returned ID
+        const [user] = await db.select().from(users).where(eq(users.id, result[0].id));
         // ... rest of creation logic
     },
 

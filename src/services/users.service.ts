@@ -66,10 +66,16 @@ export const userService = {
         };
 
         try {
-            await db.insert(users).values(userToCreate);
+            // Use $returningId() to get the inserted ID directly from MySQL
+            const result = await db.insert(users).values(userToCreate).$returningId();
 
-            // For MySQL, we need to fetch the created user by email/username since we don't have insertId
-            const [user] = await db.select().from(users).where(eq(users.email, userData.email));
+            // $returningId() returns an array of { id: number } objects
+            if (!result || result.length === 0) {
+                throw new Error('Failed to create user');
+            }
+
+            // Fetch the complete user data using the returned ID
+            const [user] = await db.select().from(users).where(eq(users.id, result[0].id));
 
             if (!user) {
                 throw new Error('Failed to create user');
@@ -77,15 +83,11 @@ export const userService = {
 
             return user;
         } catch (error) {
-            // Handle database-level unique constraint violations
+            // Handle database-level unique constraint violations (race condition fallback)
             if (error instanceof Error && error.message.includes('Duplicate entry')) {
-                if (error.message.includes('email')) {
-                    throw new Error('Email already exists in the system');
-                }
-
-                if (error.message.includes('username')) {
-                    throw new Error('Username already exists in the system');
-                }
+                // Since we already validated, this is likely a race condition
+                // Provide a generic but helpful error message
+                throw new Error('User creation failed - email or username may already exist. Please try again.');
             }
 
             throw error;
@@ -271,15 +273,11 @@ export const userService = {
 
             return user;
         } catch (error) {
-            // Handle database-level unique constraint violations
+            // Handle database-level unique constraint violations (race condition fallback)
             if (error instanceof Error && error.message.includes('Duplicate entry')) {
-                if (error.message.includes('email')) {
-                    throw new Error('Email already exists in the system');
-                }
-
-                if (error.message.includes('username')) {
-                    throw new Error('Username already exists in the system');
-                }
+                // Since we already validated, this is likely a race condition
+                // Provide a generic but helpful error message
+                throw new Error('User update failed - email or username may already exist. Please try again.');
             }
 
             throw error;
