@@ -1,0 +1,334 @@
+# Coding Standards
+
+This rule defines the coding style, formatting, and organization standards for the Node.js project. These standards ensure consistency, readability, and maintainability across the codebase.
+
+## 🎯 **Purpose**
+
+Establish consistent coding patterns, formatting standards, and code organization principles that all developers must follow.
+
+## 📋 **Scope**
+
+- Code formatting and indentation
+- Conditional statement formatting
+- Return statement formatting
+- Code organization and spacing
+- Service and schema organization
+- Documentation placement
+- Import/export patterns
+
+## 🔧 **Core Formatting Standards**
+
+### **Indentation**
+- **Always use 4 spaces** for indentation (never tabs)
+- **Consistent spacing** throughout all files
+- **Maintain alignment** for multi-line statements
+
+### **Control Flow Statements**
+- **Always use braces** for control flow statements, even single-line ones
+- **Add blank lines before and after** all control flow statements for better readability
+- **Applies to**: `if`, `for`, `while`, `do-while`, `switch`, `try-catch`
+
+#### **If Statements**
+```typescript
+// ✅ Good
+if (!user) {
+    return undefined;
+}
+
+// ❌ Bad
+if (!user) return undefined;
+```
+
+#### **For Loops**
+```typescript
+// ✅ Good
+for (const user of users) {
+    console.log(user.name);
+}
+
+// ❌ Bad
+for (const user of users) console.log(user.name);
+```
+
+#### **While Loops**
+```typescript
+// ✅ Good
+while (condition) {
+    processItem();
+}
+
+// ❌ Bad
+while (condition) processItem();
+```
+
+#### **Do-While Loops**
+```typescript
+// ✅ Good
+do {
+    processItem();
+} while (condition);
+
+// ❌ Bad
+do processItem(); while (condition);
+```
+
+#### **Switch Statements**
+```typescript
+// ✅ Good
+switch (user.status) {
+    case 'active':
+        await processActiveUser(user);
+        break;
+
+    case 'inactive':
+        await deactivateUser(user);
+        break;
+
+    default:
+        throw new Error(`Unknown user status: ${user.status}`);
+}
+```
+
+#### **Try-Catch Blocks**
+```typescript
+// ✅ Good
+try {
+    const result = await riskyOperation();
+    return result;
+} catch (error) {
+    logger.error('Operation failed', { error });
+    throw new Error('Failed to complete operation');
+}
+```
+
+### **Return Statements**
+- **Always add blank lines before** return statements for better readability
+- **Example:**
+  ```typescript
+  const [user] = await db.select().from(users).where(eq(users.id, id));
+  
+  return user;
+  ```
+
+### **Code Organization**
+- **Group related code** with proper spacing
+- **Separate logical sections** with blank lines
+- **Maintain consistent structure** across all files
+
+## 📚 **Documentation Standards**
+
+### **README Files**
+- **Always place README files in the `docs/` folder** (never in source directories)
+- **Use clear, descriptive titles** for documentation
+- **Include code examples** where helpful
+- **Keep information up-to-date**
+
+### **JSDoc Comments**
+- **Use JSDoc comments** for all service methods
+- **Include parameter descriptions** and return types
+- **Document complex logic** and business rules
+
+## 🗄️ **Database and Service Standards**
+
+### **Schema Organization**
+- **Separate schemas by table** into individual files
+- **Place IDs and reference IDs at the top** of table definitions
+- **Use descriptive field names** (e.g., `userId` instead of `authorId`)
+- **Example structure:**
+  ```typescript
+  export const posts = mysqlTable(
+      'posts',
+      {
+          id: serial('id').primaryKey(),           // Primary key first
+          userId: int('user_id').notNull(),       // Reference ID second
+          title: varchar('title', { length: 255 }), // Business fields
+          content: text('content'),
+          publishedAt: timestamp('published_at'),  // Status fields
+          deletedAt: timestamp('deleted_at'),     // Metadata fields
+          createdAt: timestamp('created_at').defaultNow().notNull(),
+          updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+      }
+  );
+  ```
+
+### **Service Layer**
+- **Separate services by resource** into individual files
+- **Place services in `src/services/`** directory
+- **Implement soft deletes** for data safety when appropriate
+- **Use timestamps instead of boolean flags** for status fields
+- **Example structure:**
+  ```
+  src/services/
+  ├── index.ts              # Main export file
+  ├── users.service.ts      # User-related business logic
+  └── posts.service.ts      # Post-related business logic
+  ```
+
+### **Configuration**
+- **Separate configuration by domain** (database, server, etc.)
+- **Use Zod schemas** for environment variable validation
+- **Provide sensible defaults** for non-critical configuration
+- **Example structure:**
+  ```
+  src/config/
+  ├── index.ts           # Main export file
+  ├── database.ts        # Database configuration
+  └── server.ts          # Server configuration
+  ```
+
+## 🏗️ **File Organization**
+
+### **Source Code Structure**
+```
+src/
+├── config/           # Configuration files by domain
+├── services/         # Business logic services by resource
+├── db/              # Database schemas and connection
+└── docs/            # All project documentation
+```
+
+### **Documentation Structure**
+```
+docs/
+├── README.md                    # Main documentation index
+├── project-setup.md            # Project setup guide
+├── database-setup.md           # Database setup guide
+├── development-guide.md        # Development workflow
+├── api-reference.md            # API documentation
+├── database-schema.md          # Database schema structure
+├── services-structure.md       # Business logic organization
+├── configuration-structure.md  # Configuration organization
+├── environment-variables.md    # Environment variables
+└── docker-guide.md            # Docker management
+```
+
+## 📦 **Import/Export Standards**
+
+### **Services**
+- **Use barrel exports** from `src/services/index.ts`
+- **Import specific services** when only one is needed
+- **Import from database module** for backward compatibility
+
+### **Configuration**
+- **Use barrel exports** from `src/config/index.ts`
+- **Import specific configs** when only one is needed
+- **Maintain clean import paths**
+
+## 🚀 **Best Practices**
+
+### **Error Handling**
+- **Provide meaningful error messages**
+- **Handle edge cases** gracefully
+- **Use proper TypeScript types** for error handling
+
+### **Performance**
+- **Use proper database indexing** for frequently queried fields
+- **Implement pagination** for large result sets
+- **Optimize database queries** with proper joins and filters
+
+### **Security**
+- **Validate all input data** with Zod schemas
+- **Use environment variables** for sensitive configuration
+- **Implement proper authentication** and authorization
+
+## 🧪 **Testing and Quality**
+
+### **Type Safety**
+- **Always run `pnpm typecheck`** before committing changes
+- **Use proper TypeScript types** from Drizzle ORM schemas
+- **Avoid `any` types** and use proper type inference
+
+### **Code Review**
+- **Ensure consistent formatting** across all files
+- **Verify proper spacing** around conditional blocks
+- **Check for proper error handling** and edge cases
+
+## 🔗 **Cross-References**
+
+- **Project Structure** - Overall file organization and architecture
+- **TypeScript Standards** - Type definitions and patterns
+- **Database Standards** - Schema design and database patterns
+- **Error Handling Standards** - Error management patterns
+- **Development Workflow** - Development and deployment processes
+
+## 📝 **Examples**
+
+### **Good Service Method Structure**
+```typescript
+/**
+ * Find user by ID (excludes soft-deleted users)
+ */
+async findById(id: number): Promise<User | undefined> {
+    const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, id));
+
+    if (!user) {
+        return undefined;
+    }
+
+    return user;
+}
+
+/**
+ * Process multiple users with proper control flow
+ */
+async processUsers(userIds: number[]): Promise<void> {
+    for (const userId of userIds) {
+        const user = await this.findById(userId);
+
+        if (user && user.isActive) {
+            await this.updateUser(userId, { lastProcessed: new Date() });
+        }
+    }
+}
+```
+
+### **Good Schema Structure**
+```typescript
+export const users = mysqlTable(
+    'users',
+    {
+        id: serial('id').primaryKey(),
+        email: varchar('email', { length: 255 }).notNull().unique(),
+        username: varchar('username', { length: 100 }).notNull().unique(),
+        passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+        firstName: varchar('first_name', { length: 100 }),
+        lastName: varchar('last_name', { length: 100 }),
+        isActive: boolean('is_active').default(true),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+    },
+    (table) => [
+        index('email_idx').on(table.email),
+        index('username_idx').on(table.username),
+    ]
+);
+```
+
+## 🎯 **Compliance Checklist**
+
+- [ ] All control flow statements use braces (if, for, while, do-while, switch, try-catch)
+- [ ] Blank lines before and after all control flow statements
+- [ ] Blank lines before return statements
+- [ ] 4-space indentation throughout
+- [ ] README files in docs/ folder only
+- [ ] Services separated by resource
+- [ ] Schemas separated by table
+- [ ] Configuration separated by domain
+- [ ] JSDoc comments on all methods
+- [ ] Proper spacing around code blocks
+- [ ] Consistent file organization
+- [ ] TypeScript types properly used
+- [ ] Zod validation for environment variables
+- [ ] Soft deletes implemented where appropriate
+- [ ] Timestamps used instead of boolean flags
+
+---
+
+**Remember:** These standards ensure code quality, maintainability, and team collaboration. Always follow them when writing or modifying code.
+description:
+globs:
+alwaysApply: false
+---

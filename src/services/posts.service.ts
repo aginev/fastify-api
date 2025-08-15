@@ -12,9 +12,11 @@ export const postService = {
         await db.insert(posts).values(postData);
         // For MySQL, we need to fetch the created post by title since we don't have insertId
         const [post] = await db.select().from(posts).where(eq(posts.title, postData.title));
+
         if (!post) {
             throw new Error('Failed to create post');
         }
+
         return post;
     },
 
@@ -26,6 +28,7 @@ export const postService = {
             .select()
             .from(posts)
             .where(and(eq(posts.id, id), isNull(posts.deletedAt)));
+
         return post;
     },
 
@@ -99,6 +102,7 @@ export const postService = {
 
         // Fetch the updated post
         const [post] = await db.select().from(posts).where(and(eq(posts.id, id), isNull(posts.deletedAt)));
+
         return post;
     },
 
@@ -113,6 +117,7 @@ export const postService = {
 
         // Verify the soft delete by checking if deletedAt is set
         const [post] = await db.select().from(posts).where(eq(posts.id, id));
+
         return post?.deletedAt !== null && post?.deletedAt !== undefined;
     },
 
@@ -127,6 +132,7 @@ export const postService = {
 
         // Fetch the updated post
         const [post] = await db.select().from(posts).where(eq(posts.id, id));
+
         return post;
     },
 
@@ -141,6 +147,7 @@ export const postService = {
 
         // Fetch the updated post
         const [post] = await db.select().from(posts).where(and(eq(posts.id, id), isNull(posts.deletedAt)));
+
         return post;
     },
 
@@ -155,6 +162,7 @@ export const postService = {
 
         // Fetch the restored post
         const [post] = await db.select().from(posts).where(eq(posts.id, id));
+
         return post;
     },
 
@@ -165,6 +173,7 @@ export const postService = {
         await db.delete(posts).where(eq(posts.id, id));
         // Verify hard delete by trying to fetch the post
         const [post] = await db.select().from(posts).where(eq(posts.id, id));
+
         return !post; // Return true if post was hard deleted (not found)
     },
 
@@ -186,6 +195,7 @@ export const postService = {
      */
     async findByIdIncludingDeleted(id: number): Promise<Post | undefined> {
         const [post] = await db.select().from(posts).where(eq(posts.id, id));
+
         return post;
     },
 };

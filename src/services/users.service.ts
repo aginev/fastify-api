@@ -12,9 +12,11 @@ export const userService = {
         await db.insert(users).values(userData);
         // For MySQL, we need to fetch the created user by email/username since we don't have insertId
         const [user] = await db.select().from(users).where(eq(users.email, userData.email));
+
         if (!user) {
             throw new Error('Failed to create user');
         }
+
         return user;
     },
 
@@ -23,6 +25,7 @@ export const userService = {
      */
     async findById(id: number): Promise<User | undefined> {
         const [user] = await db.select().from(users).where(eq(users.id, id));
+
         return user;
     },
 
@@ -31,6 +34,7 @@ export const userService = {
      */
     async findByEmail(email: string): Promise<User | undefined> {
         const [user] = await db.select().from(users).where(eq(users.email, email));
+
         return user;
     },
 
@@ -39,6 +43,7 @@ export const userService = {
      */
     async findByUsername(username: string): Promise<User | undefined> {
         const [user] = await db.select().from(users).where(eq(users.username, username));
+
         return user;
     },
 
@@ -60,6 +65,7 @@ export const userService = {
 
         // Fetch the updated user
         const [user] = await db.select().from(users).where(eq(users.id, id));
+
         return user;
     },
 
@@ -70,6 +76,7 @@ export const userService = {
         await db.delete(users).where(eq(users.id, id));
         // For MySQL, we can't easily check affected rows, so we'll verify by trying to fetch the user
         const [user] = await db.select().from(users).where(eq(users.id, id));
+
         return !user; // Return true if user was deleted (not found)
     },
 
@@ -83,7 +90,9 @@ export const userService = {
             .from(users)
             .where(eq(users.id, id));
 
-        if (!user) return undefined;
+        if (!user) {
+            return undefined;
+        }
 
         // Then get the user's posts
         const userPosts = await db

@@ -40,6 +40,12 @@ This is the master index for all project rules. Each rule focuses on a specific 
 - **Key Topics:** BIGINT AUTO_INCREMENT, soft deletes, character sets, user management, development workflow
 - **Cross-References:** Project Structure, TypeScript Standards, Error Handling Standards
 
+### **🎨 [Coding Standards](mdc:.cursor/rules/coding-standards.mdc)**
+- **Purpose:** Code formatting, style, and organization standards
+- **Scope:** Indentation, spacing, if statements, return statements, code organization
+- **Key Topics:** 4-space indentation, proper braces, blank lines, spacing around conditionals
+- **Cross-References:** TypeScript Standards, Project Structure, Database Standards
+
 ## 🔗 **Rule Relationships**
 
 ```
@@ -49,7 +55,7 @@ TypeScript Standards ←→ Error Handling Standards
     ↕️                    ↕️
 Routing Standards ←→ Logging Standards
     ↕️
-Database Standards
+Database Standards ←→ Coding Standards
 ```
 
 ## 🎯 **How to Use These Rules**
@@ -69,6 +75,8 @@ Database Standards
 - **Understanding architecture?** → Check Project Structure
 - **Designing database schema?** → Check Database Standards
 - **Working with IDs and validation?** → Check Database Standards + TypeScript Standards
+- **Code formatting and style?** → Check Coding Standards
+- **Service organization and structure?** → Check Coding Standards + Project Structure
 
 Each rule is designed to work independently while providing cross-references for comprehensive understanding.
 description:

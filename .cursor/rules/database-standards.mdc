@@ -30,6 +30,19 @@ Password: db_pass
 - **Benefits**: Performance, storage efficiency, auto-generation
 - **Range**: 0 to 18,446,744,073,709,551,615 (18+ quintillion records)
 
+### **Field Organization**
+- **Primary key first**: `id` field always at the top
+- **Reference IDs second**: Foreign keys immediately after primary key
+- **Business fields**: Core data fields (title, content, etc.)
+- **Status fields**: Publication, deletion status using timestamps
+- **Metadata fields**: Creation and update timestamps at the bottom
+
+### **Status Fields (Timestamps vs Booleans)**
+- **Use timestamps instead of boolean flags** for better tracking
+- **`published_at`**: `TIMESTAMP NULL` (null = unpublished, timestamp = when published)
+- **`deleted_at`**: `TIMESTAMP NULL` (null = not deleted, timestamp = when deleted)
+- **Benefits**: Exact timing, audit trail, analytics, recovery options
+
 ### **Timestamps**
 - **`created_at`**: `TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`
 - **`updated_at`**: `TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
@@ -44,6 +57,19 @@ Password: db_pass
 - **Foreign Keys**: Index all foreign key columns
 - **Soft Deletes**: Index `deleted_at` for efficient filtering
 - **Search Fields**: Index frequently searched columns (email, name)
+
+### **Soft Delete Implementation**
+- **Field**: `deleted_at TIMESTAMP NULL DEFAULT NULL`
+- **Logic**: `NULL` = active record, `TIMESTAMP` = deleted record
+- **Queries**: Always filter by `WHERE deleted_at IS NULL` for active records
+- **Recovery**: Can restore by setting `deleted_at = NULL`
+- **Administrative**: Use `WHERE deleted_at IS NOT NULL` to see deleted records
+
+### **Relationship Patterns**
+- **One-to-Many**: Use descriptive foreign key names (e.g., `user_id` not `author_id`)
+- **Foreign Key Constraints**: Always define with `REFERENCES` for data integrity
+- **Indexing**: Index all foreign key columns for join performance
+- **Naming**: Use `{table_name}_idx` for relationship indexes
 
 ## 📊 **Table Structure Example**
 
@@ -62,6 +88,23 @@ CREATE TABLE `users` (
     KEY `idx_deleted_at` (`deleted_at`),
     KEY `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Application users table';
+
+CREATE TABLE `posts` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Post ID',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Author user ID',
+    `title` VARCHAR(255) NOT NULL COMMENT 'Post title',
+    `content` TEXT NULL COMMENT 'Post content',
+    `published_at` TIMESTAMP NULL DEFAULT NULL COMMENT 'Publication timestamp',
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete timestamp',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_published_at` (`published_at`),
+    KEY `idx_deleted_at` (`deleted_at`),
+    KEY `idx_created_at` (`created_at`),
+    CONSTRAINT `fk_posts_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Blog posts table';
 ```
 
 ## 🔐 **User Management**
