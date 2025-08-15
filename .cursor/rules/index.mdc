@@ -42,8 +42,8 @@ This is the master index for all project rules. Each rule focuses on a specific 
 
 ### **🎨 [Coding Standards](mdc:.cursor/rules/coding-standards.mdc)**
 - **Purpose:** Code formatting, style, and organization standards
-- **Scope:** Indentation, spacing, if statements, return statements, code organization
-- **Key Topics:** 4-space indentation, proper braces, blank lines, spacing around conditionals
+- **Scope:** Indentation, spacing, control flow statements, return statements, code organization
+- **Key Topics:** 4-space indentation, proper braces, blank lines (with exceptions for single-statement blocks), spacing around conditionals
 - **Cross-References:** TypeScript Standards, Project Structure, Database Standards
 
 ## 🔗 **Rule Relationships**

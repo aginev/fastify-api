@@ -25,17 +25,30 @@ Establish consistent coding patterns, formatting standards, and code organizatio
 
 ### **Control Flow Statements**
 - **Always use braces** for control flow statements, even single-line ones
-- **Add blank lines before and after** all control flow statements for better readability
+- **Add blank lines before and after** control flow statements for better readability
+- **Exception**: Skip blank lines **only if** the control flow statement contains **only one statement** inside braces
 - **Applies to**: `if`, `for`, `while`, `do-while`, `switch`, `try-catch`
 
 #### **If Statements**
 ```typescript
-// ✅ Good
+// ✅ Good - Multiple statements, blank lines required
+if (!user) {
+    logger.warn('User not found', { userId: id });
+    
+    return undefined;
+}
+
+// ✅ Good - Single statement, blank lines optional
 if (!user) {
     return undefined;
 }
 
-// ❌ Bad
+// ✅ Good - Single statement, no blank lines (acceptable)
+if (!user) {
+    return undefined;
+}
+
+// ❌ Bad - No braces
 if (!user) return undefined;
 ```
 
@@ -94,21 +107,41 @@ switch (user.status) {
 // ✅ Good
 try {
     const result = await riskyOperation();
+    
     return result;
 } catch (error) {
     logger.error('Operation failed', { error });
+    
     throw new Error('Failed to complete operation');
 }
 ```
 
 ### **Return Statements**
 - **Always add blank lines before** return statements for better readability
-- **Example:**
+- **Exception**: Skip blank lines **only if** the return is the **only statement** inside a control flow block
+- **Examples:**
   ```typescript
+  // ✅ Good - Multiple statements, blank line required
   const [user] = await db.select().from(users).where(eq(users.id, id));
   
   return user;
+  
+  // ✅ Good - Single statement in control flow, blank line optional
+  if (!user) {
+      return undefined;
+  }
+  
+  // ✅ Good - Single statement in control flow, no blank line (acceptable)
+  if (!user) {
+      return undefined;
+  }
   ```
+
+### **Blank Line Rules Summary**
+- **Always add blank lines before return statements** (except in single-statement control flow blocks)
+- **Add blank lines before and after control flow statements** (except when they contain only one statement)
+- **Single-statement control flow blocks** can optionally skip blank lines for cleaner, more concise code
+- **Multi-statement blocks** must have proper spacing for readability
 
 ### **Code Organization**
 - **Group related code** with proper spacing
@@ -310,8 +343,8 @@ export const users = mysqlTable(
 ## 🎯 **Compliance Checklist**
 
 - [ ] All control flow statements use braces (if, for, while, do-while, switch, try-catch)
-- [ ] Blank lines before and after all control flow statements
-- [ ] Blank lines before return statements
+- [ ] Blank lines before and after control flow statements (except single-statement blocks)
+- [ ] Blank lines before return statements (except in single-statement control flow blocks)
 - [ ] 4-space indentation throughout
 - [ ] README files in docs/ folder only
 - [ ] Services separated by resource
