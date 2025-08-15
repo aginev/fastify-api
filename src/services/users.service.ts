@@ -1,6 +1,9 @@
 import { eq, or, and, ne } from 'drizzle-orm';
 import { db, users, posts, type User, type NewUser, type UpdateUser, type UserWithPosts } from '../db/index.js';
 import bcrypt from 'bcrypt';
+import {
+    UserError
+} from '../errors/index.js';
 
 /**
  * User service for handling all user-related database operations
@@ -49,11 +52,11 @@ export const userService = {
             }).filter(Boolean);
 
             if (conflicts.includes('email') && conflicts.includes('username')) {
-                throw new Error('Email and username already exist in the system');
+                throw UserError.alreadyExists('email', { email: userData.email, username: userData.username, reason: 'both email and username conflict' });
             } else if (conflicts.includes('email')) {
-                throw new Error('Email already exists in the system');
+                throw UserError.alreadyExists('email', { email: userData.email });
             } else if (conflicts.includes('username')) {
-                throw new Error('Username already exists in the system');
+                throw UserError.alreadyExists('username', { username: userData.username });
             }
         }
 
@@ -65,33 +68,29 @@ export const userService = {
             passwordHash: hashedPassword,
         };
 
-        try {
-            // Use $returningId() to get the inserted ID directly from MySQL
-            const result = await db.insert(users).values(userToCreate).$returningId();
+        // Use $returningId() to get the inserted ID directly from MySQL
+        const result = await db.insert(users).values(userToCreate).$returningId();
 
-            // $returningId() returns an array of { id: number } objects
-            if (!result || result.length === 0) {
-                throw new Error('Failed to create user');
-            }
-
-            // Fetch the complete user data using the returned ID
-            const [user] = await db.select().from(users).where(eq(users.id, result[0].id));
-
-            if (!user) {
-                throw new Error('Failed to create user');
-            }
-
-            return user;
-        } catch (error) {
-            // Handle database-level unique constraint violations (race condition fallback)
-            if (error instanceof Error && error.message.includes('Duplicate entry')) {
-                // Since we already validated, this is likely a race condition
-                // Provide a generic but helpful error message
-                throw new Error('User creation failed - email or username may already exist. Please try again.');
-            }
-
-            throw error;
+        // $returningId() returns an array of { id: number } objects
+        if (!result || result.length === 0) {
+            throw UserError.creationFailed({
+                reason: 'No ID returned from insert operation',
+                userData: { email: userData.email, username: userData.username }
+            });
         }
+
+        // Fetch the complete user data using the returned ID
+        const [user] = await db.select().from(users).where(eq(users.id, result[0].id)).limit(1);
+
+        if (!user) {
+            throw UserError.creationFailed({
+                reason: 'User not found after insert',
+                userId: result[0].id,
+                userData: { email: userData.email, username: userData.username }
+            });
+        }
+
+        return user;
     },
 
     /**
@@ -140,7 +139,11 @@ export const userService = {
             .where(eq(users.id, userId));
 
         // Fetch the updated user
-        const [user] = await db.select().from(users).where(eq(users.id, userId));
+        const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+        if (!user) {
+            throw UserError.notFound(userId);
+        }
 
         return user;
     },
@@ -149,7 +152,7 @@ export const userService = {
      * Find user by ID
      */
     async findById(id: number): Promise<User | undefined> {
-        const [user] = await db.select().from(users).where(eq(users.id, id));
+        const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
         return user;
     },
@@ -158,7 +161,7 @@ export const userService = {
      * Find user by email
      */
     async findByEmail(email: string): Promise<User | undefined> {
-        const [user] = await db.select().from(users).where(eq(users.email, email));
+        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
         return user;
     },
@@ -167,7 +170,7 @@ export const userService = {
      * Find user by username
      */
     async findByUsername(username: string): Promise<User | undefined> {
-        const [user] = await db.select().from(users).where(eq(users.username, username));
+        const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
 
         return user;
     },
@@ -187,7 +190,7 @@ export const userService = {
             ? and(eq(users.email, email), ne(users.id, excludeUserId))
             : eq(users.email, email);
 
-        const [existingUser] = await db.select().from(users).where(query);
+        const [existingUser] = await db.select().from(users).where(query).limit(1);
         return !existingUser;
     },
 
@@ -199,7 +202,7 @@ export const userService = {
             ? and(eq(users.username, username), ne(users.id, excludeUserId))
             : eq(users.username, username);
 
-        const [existingUser] = await db.select().from(users).where(query);
+        const [existingUser] = await db.select().from(users).where(query).limit(1);
         return !existingUser;
     },
 
@@ -254,34 +257,23 @@ export const userService = {
             const { emailAvailable, usernameAvailable, conflicts } = await this.areEmailAndUsernameAvailable(email, username, id);
 
             if (userData.email && !emailAvailable) {
-                throw new Error('Email already exists in the system');
+                throw UserError.alreadyExists('email', { email: userData.email, userId: id });
             }
 
             if (userData.username && !usernameAvailable) {
-                throw new Error('Username already exists in the system');
+                throw UserError.alreadyExists('username', { username: userData.username, userId: id });
             }
         }
 
-        try {
-            await db
-                .update(users)
-                .set({ ...userData, updatedAt: new Date() })
-                .where(eq(users.id, id));
+        await db
+            .update(users)
+            .set({ ...userData, updatedAt: new Date() })
+            .where(eq(users.id, id));
 
-            // Fetch the updated user
-            const [user] = await db.select().from(users).where(eq(users.id, id));
+        // Fetch the updated user
+        const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
-            return user;
-        } catch (error) {
-            // Handle database-level unique constraint violations (race condition fallback)
-            if (error instanceof Error && error.message.includes('Duplicate entry')) {
-                // Since we already validated, this is likely a race condition
-                // Provide a generic but helpful error message
-                throw new Error('User update failed - email or username may already exist. Please try again.');
-            }
-
-            throw error;
-        }
+        return user;
     },
 
     /**
@@ -290,7 +282,7 @@ export const userService = {
     async delete(id: number): Promise<boolean> {
         await db.delete(users).where(eq(users.id, id));
         // For MySQL, we can't easily check affected rows, so we'll verify by trying to fetch the user
-        const [user] = await db.select().from(users).where(eq(users.id, id));
+        const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
         return !user; // Return true if user was deleted (not found)
     },
@@ -303,7 +295,8 @@ export const userService = {
         const [user] = await db
             .select()
             .from(users)
-            .where(eq(users.id, id));
+            .where(eq(users.id, id))
+            .limit(1);
 
         if (!user) {
             return undefined;

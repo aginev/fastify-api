@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
-import { AppError } from '../error';
+import { AppError } from '../errors/index.js';
 import { getLogLevel, type LogLevel } from '../utils/logging';
 
 interface ErrorResponse {

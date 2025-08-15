@@ -15,6 +15,7 @@ Welcome to the project documentation! This directory contains comprehensive guid
 - [Services Structure](./services-structure.md) - Business logic organization by resource
 - [Configuration Structure](./configuration-structure.md) - Application configuration organization
 - [Environment Variables](./environment-variables.md) - Configuration options and setup
+- [Error Handling System](./error-handling-system.md) - Error handling architecture and patterns
 
 ### 🐳 Infrastructure
 - [Docker Guide](./docker-guide.md) - Container configuration and management
