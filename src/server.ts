@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { IncomingMessage } from 'node:http';
 import { createErrorHandler, createRequestContextHook } from './middleware';
 import { getRequestId } from './context';
-import { env } from './config';
+import { serverConfig } from './config';
 import type { Request, Reply } from './types';
 import helmet from '@fastify/helmet';
 import sensible from '@fastify/sensible';
@@ -16,9 +16,9 @@ import underPressure from '@fastify/under-pressure';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { registerRoutes } from './routes';
 
-const port = env.PORT;
+const port = serverConfig.port;
 const transport =
-    env.NODE_ENV === 'development'
+    serverConfig.isDevelopment
         ? {
             target: 'pino-pretty',
             options: {

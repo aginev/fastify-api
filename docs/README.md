@@ -11,6 +11,9 @@ Welcome to the project documentation! This directory contains comprehensive guid
 
 ### 🛠️ Development
 - [API Reference](./api-reference.md) - API endpoints and usage
+- [Database Schema](./database-schema.md) - Database table schemas and structure
+- [Services Structure](./services-structure.md) - Business logic organization by resource
+- [Configuration Structure](./configuration-structure.md) - Application configuration organization
 - [Environment Variables](./environment-variables.md) - Configuration options and setup
 
 ### 🐳 Infrastructure
