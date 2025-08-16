@@ -1,26 +1,19 @@
 import { AppError, type ErrorContext } from './base.js';
 
 /**
- * UserError - Static factory for creating user-related errors
- * Provides a clean API for creating specific user error instances
+ * User-related error classes
  */
 export class UserError extends AppError {
-    /**
-     * User not found error
-     */
-    static notFound(userId: number, context: ErrorContext = {}): UserError {
+    static notFound(id: number): UserError {
         return new UserError(
             'User not found',
             404,
             'USER_NOT_FOUND',
-            { userId, ...context }
+            { userId: id }
         );
     }
 
-    /**
-     * User already exists error
-     */
-    static alreadyExists(field: 'email' | 'username', context: ErrorContext = {}): UserError {
+    static alreadyExists(field: 'email', context: ErrorContext = {}): UserError {
         return new UserError(
             'User already exists',
             409,
@@ -29,9 +22,6 @@ export class UserError extends AppError {
         );
     }
 
-    /**
-     * User creation failed error
-     */
     static creationFailed(context: ErrorContext = {}): UserError {
         return new UserError(
             'Failed to create user',
@@ -41,51 +31,39 @@ export class UserError extends AppError {
         );
     }
 
-    /**
-     * User update failed error
-     */
-    static updateFailed(userId: number, context: ErrorContext = {}): UserError {
+    static updateFailed(id: number, context: ErrorContext = {}): UserError {
         return new UserError(
             'Failed to update user',
             500,
             'USER_UPDATE_FAILED',
-            { userId, ...context }
+            { userId: id, ...context }
         );
     }
 
-    /**
-     * User deletion failed error
-     */
-    static deletionFailed(userId: number, context: ErrorContext = {}): UserError {
+    static deletionFailed(id: number, context: ErrorContext = {}): UserError {
         return new UserError(
             'Failed to delete user',
             500,
             'USER_DELETION_FAILED',
-            { userId, ...context }
+            { userId: id, ...context }
         );
     }
 
-    /**
-     * Authentication failed error
-     */
-    static authenticationFailed(context: ErrorContext = {}): UserError {
+    static invalidCredentials(context: ErrorContext = {}): UserError {
         return new UserError(
-            'Authentication failed - invalid credentials',
+            'Invalid credentials',
             401,
-            'AUTHENTICATION_FAILED',
+            'INVALID_CREDENTIALS',
             context
         );
     }
 
-    /**
-     * Password update failed error
-     */
-    static passwordUpdateFailed(userId: number, context: ErrorContext = {}): UserError {
+    static passwordMismatch(context: ErrorContext = {}): UserError {
         return new UserError(
-            'Failed to update password',
-            500,
-            'PASSWORD_UPDATE_FAILED',
-            { userId, ...context }
+            'Current password is incorrect',
+            400,
+            'PASSWORD_MISMATCH',
+            context
         );
     }
 }

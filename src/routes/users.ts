@@ -1,5 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { Request, Reply } from '../types';
+import { userService } from '../services/users.service.js';
+import { UserError } from '../errors/index.js';
 import {
     CreateUserSchema,
     UpdateUserSchema,
@@ -10,128 +12,129 @@ import {
 export async function userRoutes(app: FastifyInstance) {
     // Get all active users (excluding soft deleted)
     app.get('/', async (req: Request, reply: Reply) => {
-        // TODO: Implement database query with WHERE deleted_at IS NULL
-        const users: any[] = [];
+        const users = await userService.findAll();
+
         return reply.send({ users });
     });
 
     // Get user by ID (excluding soft deleted)
     app.get('/:id', async (req: Request, reply: Reply) => {
-        // Validate route parameters
         const params = UserParamsSchema.parse(req.params);
 
-        // TODO: Implement database query with WHERE deleted_at IS NULL
-        const user = {
-            id: params.id,
-            first_name: 'John',
-            last_name: 'Doe',
-            email: 'john.doe@example.com',
-            password: '$2b$10$placeholder.hash.for.john.doe',
-            created_at: new Date(),
-            updated_at: new Date(),
-            deleted_at: null,
-        };
+        const user = await userService.findById(params.id);
+
+        if (!user) {
+            throw UserError.notFound(params.id);
+        }
 
         return reply.send({ user });
     });
 
     // Create new user
     app.post('/', async (req: Request, reply: Reply) => {
-        // Validate request body
         const userData = CreateUserSchema.parse(req.body);
 
-        // TODO: Implement database insert
-        const newUser = {
-            id: BigInt(Date.now()), // Using BigInt for ID
-            ...userData,
-            created_at: new Date(),
-            updated_at: new Date(),
-            deleted_at: null,
+        // Transform to match database schema
+        const drizzleUserData = {
+            email: userData.email,
+            password_hash: userData.password,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            is_active: true
         };
+
+        const newUser = await userService.create(drizzleUserData);
 
         return reply.code(201).send({ user: newUser });
     });
 
     // Update user
     app.put('/:id', async (req: Request, reply: Reply) => {
-        // Validate route parameters and request body
         const params = UserParamsSchema.parse(req.params);
         const userData = UpdateUserSchema.parse(req.body);
 
-        // TODO: Implement database update
-        const updatedUser = {
-            id: params.id,
-            first_name: userData.first_name || 'John',
-            last_name: userData.last_name || 'Doe',
-            email: userData.email || 'john.doe@example.com',
-            password: userData.password || '$2b$10$placeholder.hash.for.john.doe',
-            created_at: new Date(),
-            updated_at: new Date(),
-            deleted_at: null,
-        };
+        // Transform to match database schema
+        const drizzleUserData: any = {};
+
+        if (userData.first_name !== undefined) {
+            drizzleUserData.first_name = userData.first_name;
+        }
+
+        if (userData.last_name !== undefined) {
+            drizzleUserData.last_name = userData.last_name;
+        }
+
+        if (userData.email !== undefined) {
+            drizzleUserData.email = userData.email;
+        }
+
+        if (userData.password !== undefined) {
+            drizzleUserData.password_hash = userData.password;
+        }
+
+        const updatedUser = await userService.update(params.id, drizzleUserData);
+
+        if (!updatedUser) {
+            throw UserError.notFound(params.id);
+        }
 
         return reply.send({ user: updatedUser });
     });
 
     // Soft delete user
     app.delete('/:id', async (req: Request, reply: Reply) => {
-        // Validate route parameters
         const params = UserParamsSchema.parse(req.params);
 
-        // TODO: Implement soft delete: UPDATE users SET deleted_at = NOW() WHERE id = ?
-        const deletedAt = new Date();
+        const deleted = await userService.delete(params.id);
+
+        if (!deleted) {
+            throw UserError.notFound(params.id);
+        }
+
         return reply.send({
             deleted: params.id,
-            deleted_at: deletedAt,
+            message: 'User soft deleted successfully'
         });
     });
 
-    // Restore soft deleted user
+    // Restore soft deleted user (not implemented in service yet)
     app.patch('/:id/restore', async (req: Request, reply: Reply) => {
-        // Validate route parameters
         const params = UserParamsSchema.parse(req.params);
 
-        // TODO: Implement restore: UPDATE users SET deleted_at = NULL WHERE id = ?
-        const restoredUser = {
-            id: params.id,
-            first_name: 'John',
-            last_name: 'Doe',
-            email: 'john.doe@example.com',
-            password: '$2b$10$placeholder.hash.for.john.doe',
-            created_at: new Date(),
-            updated_at: new Date(),
-            deleted_at: null,
-        };
-
-        return reply.send({ user: restoredUser });
+        // TODO: Implement restore method in user service
+        return reply.send({
+            message: 'Restore functionality not implemented yet',
+            user_id: params.id
+        });
     });
 
     // Hard delete user (permanently remove)
     app.delete('/:id/hard', async (req: Request, reply: Reply) => {
-        // Validate route parameters
         const params = UserParamsSchema.parse(req.params);
 
-        // TODO: Implement hard delete: DELETE FROM users WHERE id = ?
+        // TODO: Implement hard delete method in user service
         return reply.send({
-            permanently_deleted: params.id,
+            message: 'Hard delete functionality not implemented yet',
+            permanently_deleted: params.id
         });
     });
 
     // Change user password
     app.patch('/:id/password', async (req: Request, reply: Reply) => {
-        // Validate route parameters and request body
         const params = UserParamsSchema.parse(req.params);
         const passwordData = ChangePasswordSchema.parse(req.body);
 
-        // TODO: Implement password change:
-        // 1. Verify current password hash matches stored hash
-        // 2. Hash new password using bcrypt or similar
-        // 3. Update password in database
-        // 4. Update updated_at timestamp
+        // TODO: Implement current password verification in service
+        // For now, just update the password
+        const updatedUser = await userService.updatePassword(params.id, passwordData.new_password);
+
+        if (!updatedUser) {
+            throw UserError.notFound(params.id);
+        }
 
         return reply.send({
             message: 'Password changed successfully',
-            user_id: params.id,
+            user_id: params.id
         });
     });
 }

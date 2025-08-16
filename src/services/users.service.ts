@@ -29,45 +29,22 @@ export const userService = {
      * Create a new user with hashed password
      */
     async create(userData: NewUser): Promise<User> {
-        // Check if email or username already exists in a single query
+        // Check if email already exists
         const existingUser = await db
-            .select({ email: users.email, username: users.username })
+            .select({ email: users.email })
             .from(users)
-            .where(
-                or(
-                    eq(users.email, userData.email),
-                    eq(users.username, userData.username)
-                )
-            );
+            .where(eq(users.email, userData.email));
 
         if (existingUser.length > 0) {
-            const conflicts = existingUser.map(user => {
-                if (user.email === userData.email) {
-                    return 'email';
-                }
-
-                if (user.username === userData.username) {
-                    return 'username';
-                }
-
-                return null;
-            }).filter(Boolean);
-
-            if (conflicts.includes('email') && conflicts.includes('username')) {
-                throw UserError.alreadyExists('email', { email: userData.email, username: userData.username, reason: 'Both email and username conflict' });
-            } else if (conflicts.includes('email')) {
-                throw UserError.alreadyExists('email', { email: userData.email });
-            } else if (conflicts.includes('username')) {
-                throw UserError.alreadyExists('username', { username: userData.username });
-            }
+            throw UserError.alreadyExists('email', { email: userData.email });
         }
 
         // Hash the password before storing
-        const hashedPassword = await this.hashPassword(userData.passwordHash);
+        const hashedPassword = await this.hashPassword(userData.password_hash);
 
         const userToCreate = {
             ...userData,
-            passwordHash: hashedPassword,
+            password_hash: hashedPassword,
         };
 
         // Use $returningId() to get the inserted ID directly from MySQL
@@ -77,7 +54,7 @@ export const userService = {
         if (!result || result.length === 0) {
             throw UserError.creationFailed({
                 reason: 'No ID returned from insert operation',
-                userData: { email: userData.email, username: userData.username }
+                userData: { email: userData.email }
             });
         }
 
@@ -88,7 +65,7 @@ export const userService = {
             throw UserError.creationFailed({
                 reason: 'User not found after insert',
                 userId: result[0].id,
-                userData: { email: userData.email, username: userData.username }
+                userData: { email: userData.email }
             });
         }
 
@@ -96,30 +73,24 @@ export const userService = {
     },
 
     /**
-     * Authenticate user with email/username and password
+     * Authenticate user with email and password
      */
-    async authenticate(identifier: string, password: string): Promise<User | null> {
-        // Single query to find user by email OR username
+    async authenticate(email: string, password: string): Promise<User | null> {
+        // Find user by email
         const [user] = await db
             .select()
             .from(users)
-            .where(
-                or(
-                    eq(users.email, identifier),
-                    eq(users.username, identifier)
-                )
-            );
+            .where(eq(users.email, email))
+            .limit(1);
 
         if (!user) {
-
             return null;
         }
 
         // Verify password
-        const isValidPassword = await this.verifyPassword(password, user.passwordHash);
+        const isValidPassword = await this.verifyPassword(password, user.password_hash);
 
         if (!isValidPassword) {
-
             return null;
         }
 
@@ -127,7 +98,7 @@ export const userService = {
     },
 
     /**
-     * Update user password with new hashed password
+     * Update user password
      */
     async updatePassword(userId: number, newPassword: string): Promise<User | undefined> {
         const hashedPassword = await this.hashPassword(newPassword);
@@ -135,26 +106,30 @@ export const userService = {
         await db
             .update(users)
             .set({
-                passwordHash: hashedPassword,
-                updatedAt: new Date()
+                password_hash: hashedPassword,
+                updated_at: new Date()
             })
             .where(eq(users.id, userId));
 
-        // Fetch the updated user
-        const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+        // Fetch updated user to verify the update was successful
+        const [updatedUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
 
-        if (!user) {
-            throw UserError.notFound(userId);
-        }
-
-        return user;
+        return updatedUser;
     },
 
     /**
      * Find user by ID
      */
     async findById(id: number): Promise<User | undefined> {
-        const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+        const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, id))
+            .limit(1);
 
         return user;
     },
@@ -163,16 +138,11 @@ export const userService = {
      * Find user by email
      */
     async findByEmail(email: string): Promise<User | undefined> {
-        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-
-        return user;
-    },
-
-    /**
-     * Find user by username
-     */
-    async findByUsername(username: string): Promise<User | undefined> {
-        const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+        const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1);
 
         return user;
     },
@@ -181,11 +151,15 @@ export const userService = {
      * Find all users with pagination
      */
     async findAll(limit = 50, offset = 0): Promise<User[]> {
-        return db.select().from(users).limit(limit).offset(offset);
+        return db
+            .select()
+            .from(users)
+            .limit(limit)
+            .offset(offset);
     },
 
     /**
-     * Check if email is available (not used by any user)
+     * Check if email is available (for new users or updates)
      */
     async isEmailAvailable(email: string, excludeUserId?: number): Promise<boolean> {
         const query = excludeUserId
@@ -193,130 +167,83 @@ export const userService = {
             : eq(users.email, email);
 
         const [existingUser] = await db.select().from(users).where(query).limit(1);
-        
+
         return !existingUser;
     },
 
     /**
-     * Check if username is available (not used by any user)
-     */
-    async isUsernameAvailable(username: string, excludeUserId?: number): Promise<boolean> {
-        const query = excludeUserId
-            ? and(eq(users.username, username), ne(users.id, excludeUserId))
-            : eq(users.username, username);
-
-        const [existingUser] = await db.select().from(users).where(query).limit(1);
-        
-        return !existingUser;
-    },
-
-    /**
-     * Check if email and username are available (single query)
-     */
-    async areEmailAndUsernameAvailable(email: string, username: string, excludeUserId?: number): Promise<{ emailAvailable: boolean; usernameAvailable: boolean; conflicts: string[] }> {
-        const baseQuery = excludeUserId
-            ? and(
-                or(
-                    eq(users.email, email),
-                    eq(users.username, username)
-                ),
-                ne(users.id, excludeUserId)
-            )
-            : or(
-                eq(users.email, email),
-                eq(users.username, username)
-            );
-
-        const existingUsers = await db
-            .select({ email: users.email, username: users.username })
-            .from(users)
-            .where(baseQuery);
-
-        const conflicts = existingUsers.map(user => {
-            if (user.email === email) {
-                return 'email';
-            }
-
-            if (user.username === username) {
-                return 'username';
-            }
-            
-            return null;
-        }).filter(Boolean) as string[];
-
-        return {
-            emailAvailable: !conflicts.includes('email'),
-            usernameAvailable: !conflicts.includes('username'),
-            conflicts
-        };
-    },
-
-    /**
-     * Update user by ID with uniqueness validation
+     * Update user information
      */
     async update(id: number, userData: UpdateUser): Promise<User | undefined> {
-        // Check uniqueness constraints if email or username is being updated
-        if (userData.email || userData.username) {
-            const email = userData.email || '';
-            const username = userData.username || '';
+        // Check if email conflicts with existing users
+        if (userData.email) {
+            const emailAvailable = await this.isEmailAvailable(userData.email, id);
 
-            const { emailAvailable, usernameAvailable, conflicts } = await this.areEmailAndUsernameAvailable(email, username, id);
-
-            if (userData.email && !emailAvailable) {
-                throw UserError.alreadyExists('email', { email: userData.email, userId: id });
+            if (!emailAvailable) {
+                throw UserError.alreadyExists('email', { email: userData.email });
             }
+        }
 
-            if (userData.username && !usernameAvailable) {
-                throw UserError.alreadyExists('username', { username: userData.username, userId: id });
-            }
+        // Hash password if provided
+        let updateData = { ...userData, updated_at: new Date() };
+        if (userData.password_hash) {
+            updateData.password_hash = await this.hashPassword(userData.password_hash);
         }
 
         await db
             .update(users)
-            .set({ ...userData, updatedAt: new Date() })
+            .set(updateData)
             .where(eq(users.id, id));
 
-        // Fetch the updated user
-        const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+        // Fetch updated user to verify the update was successful
+        const [updatedUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, id))
+            .limit(1);
 
-        return user;
+        return updatedUser;
     },
 
     /**
-     * Delete user by ID
+     * Soft delete user
      */
     async delete(id: number): Promise<boolean> {
-        await db.delete(users).where(eq(users.id, id));
-        // For MySQL, we can't easily check affected rows, so we'll verify by trying to fetch the user
-        const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+        await db
+            .update(users)
+            .set({ updated_at: new Date() })
+            .where(eq(users.id, id));
 
-        return !user; // Return true if user was deleted (not found)
-    },
-
-    /**
-     * Find user with posts
-     */
-    async findByIdWithPosts(id: number): Promise<UserWithPosts | undefined> {
-        // First get the user
+        // Verify the update was successful by checking if user exists
         const [user] = await db
             .select()
             .from(users)
             .where(eq(users.id, id))
             .limit(1);
 
+        return !!user;
+    },
+
+    /**
+     * Find user with their posts
+     */
+    async findByIdWithPosts(id: number): Promise<UserWithPosts | undefined> {
+        // First, get the user
+        const user = await this.findById(id);
         if (!user) {
             return undefined;
         }
 
-        // Then get the user's posts
+        // Then, get their posts
         const userPosts = await db
             .select()
             .from(posts)
-            .where(eq(posts.userId, id));
+            .where(eq(posts.user_id, id));
 
+        // Combine user and posts
         return {
             ...user,
             posts: userPosts
         };
-    },
+    }
 };

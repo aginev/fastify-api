@@ -1,8 +1,6 @@
-import { eq, desc, isNotNull, isNull, and } from 'drizzle-orm';
+import { eq, isNull, isNotNull, and } from 'drizzle-orm';
 import { db, posts, users, type Post, type NewPost, type UpdatePost, type PostWithUser } from '../db/index.js';
-import {
-    PostError
-} from '../errors/index.js';
+import { PostError } from '../errors/index.js';
 
 /**
  * Post service for handling all post-related database operations
@@ -19,7 +17,7 @@ export const postService = {
         if (!result || result.length === 0) {
             throw PostError.creationFailed({
                 reason: 'No ID returned from insert operation',
-                postData: { title: postData.title, userId: postData.userId }
+                postData: { title: postData.title, user_id: postData.user_id }
             });
         }
 
@@ -30,7 +28,7 @@ export const postService = {
             throw PostError.creationFailed({
                 reason: 'Post not found after insert',
                 postId: result[0].id,
-                postData: { title: postData.title, userId: postData.userId }
+                postData: { title: postData.title, user_id: postData.user_id }
             });
         }
 
@@ -38,28 +36,34 @@ export const postService = {
     },
 
     /**
-     * Find post by ID (excludes soft-deleted posts)
+     * Find post by ID (excluding soft deleted)
      */
     async findById(id: number): Promise<Post | undefined> {
         const [post] = await db
             .select()
             .from(posts)
-            .where(and(eq(posts.id, id), isNull(posts.deletedAt)));
+            .where(
+                and(
+                    eq(posts.id, id),
+                    isNull(posts.deleted_at)
+                )
+            )
+            .limit(1);
 
         return post;
     },
 
     /**
-     * Find posts by user ID with pagination (excludes soft-deleted posts)
+     * Find post by ID including soft deleted
      */
-    async findByUser(userId: number, limit = 50, offset = 0): Promise<Post[]> {
-        return db
+    async findByIdIncludingDeleted(id: number): Promise<Post | undefined> {
+        const [post] = await db
             .select()
             .from(posts)
-            .where(and(eq(posts.userId, userId), isNull(posts.deletedAt)))
-            .orderBy(desc(posts.createdAt))
-            .limit(limit)
-            .offset(offset);
+            .where(eq(posts.id, id))
+            .limit(1);
+
+        return post;
     },
 
     /**
@@ -69,184 +73,274 @@ export const postService = {
         const [post] = await db
             .select({
                 id: posts.id,
+                user_id: posts.user_id,
                 title: posts.title,
                 content: posts.content,
-                userId: posts.userId,
-                publishedAt: posts.publishedAt,
-                deletedAt: posts.deletedAt,
-                createdAt: posts.createdAt,
-                updatedAt: posts.updatedAt,
+                published_at: posts.published_at,
+                deleted_at: posts.deleted_at,
+                created_at: posts.created_at,
+                updated_at: posts.updated_at,
                 user: {
                     id: users.id,
                     email: users.email,
-                    username: users.username,
-                    passwordHash: users.passwordHash,
-                    firstName: users.firstName,
-                    lastName: users.lastName,
-                    isActive: users.isActive,
-                    createdAt: users.createdAt,
-                    updatedAt: users.updatedAt,
+                    password_hash: users.password_hash,
+                    first_name: users.first_name,
+                    last_name: users.last_name,
+                    is_active: users.is_active,
+                    created_at: users.created_at,
+                    updated_at: users.updated_at
                 }
             })
             .from(posts)
-            .innerJoin(users, eq(posts.userId, users.id))
-            .where(and(eq(posts.id, id), isNull(posts.deletedAt)));
+            .innerJoin(users, eq(posts.user_id, users.id))
+            .where(
+                and(
+                    eq(posts.id, id),
+                    isNull(posts.deleted_at)
+                )
+            )
+            .limit(1);
 
-        return post;
+        if (!post) {
+            return undefined;
+        }
+
+        return {
+            id: post.id,
+            user_id: post.user_id,
+            title: post.title,
+            content: post.content,
+            published_at: post.published_at,
+            deleted_at: post.deleted_at,
+            created_at: post.created_at,
+            updated_at: post.updated_at,
+            user: post.user
+        };
     },
 
     /**
-     * Find all published posts with pagination (excludes soft-deleted posts)
+     * Find all posts (excluding soft deleted)
+     */
+    async findAll(limit = 50, offset = 0): Promise<Post[]> {
+        return db
+            .select()
+            .from(posts)
+            .where(isNull(posts.deleted_at))
+            .limit(limit)
+            .offset(offset);
+    },
+
+    /**
+     * Find posts by user ID (excluding soft deleted)
+     */
+    async findByUserId(userId: number, limit = 50, offset = 0): Promise<Post[]> {
+        return db
+            .select()
+            .from(posts)
+            .where(
+                and(
+                    eq(posts.user_id, userId),
+                    isNull(posts.deleted_at)
+                )
+            )
+            .limit(limit)
+            .offset(offset);
+    },
+
+    /**
+     * Find published posts (excluding soft deleted)
      */
     async findPublished(limit = 50, offset = 0): Promise<Post[]> {
         return db
             .select()
             .from(posts)
-            .where(and(isNotNull(posts.publishedAt), isNull(posts.deletedAt)))
-            .orderBy(desc(posts.createdAt))
+            .where(
+                and(
+                    isNotNull(posts.published_at),
+                    isNull(posts.deleted_at)
+                )
+            )
             .limit(limit)
             .offset(offset);
     },
 
     /**
-     * Update post by ID (excludes soft-deleted posts)
+     * Find unpublished posts (excluding soft deleted)
+     */
+    async findUnpublished(limit = 50, offset = 0): Promise<Post[]> {
+        return db
+            .select()
+            .from(posts)
+            .where(
+                and(
+                    isNull(posts.published_at),
+                    isNull(posts.deleted_at)
+                )
+            )
+            .limit(limit)
+            .offset(offset);
+    },
+
+    /**
+     * Update post
      */
     async update(id: number, postData: UpdatePost): Promise<Post | undefined> {
         await db
             .update(posts)
-            .set({ ...postData, updatedAt: new Date() })
-            .where(and(eq(posts.id, id), isNull(posts.deletedAt)));
+            .set({ ...postData, updated_at: new Date() })
+            .where(eq(posts.id, id));
 
-        // Fetch the updated post
-        const [post] = await db.select().from(posts).where(and(eq(posts.id, id), isNull(posts.deletedAt))).limit(1);
+        // Fetch updated post to verify the update was successful
+        const [updatedPost] = await db
+            .select()
+            .from(posts)
+            .where(eq(posts.id, id))
+            .limit(1);
 
-        return post;
+        return updatedPost;
     },
 
     /**
-     * Soft delete post by ID
-     */
-    async delete(id: number): Promise<boolean> {
-        await db
-            .update(posts)
-            .set({ deletedAt: new Date(), updatedAt: new Date() })
-            .where(and(eq(posts.id, id), isNull(posts.deletedAt)));
-
-        // Verify the soft delete by checking if deletedAt is set
-        const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
-
-        return post?.deletedAt !== null && post?.deletedAt !== undefined;
-    },
-
-    /**
-     * Publish a post
+     * Publish post
      */
     async publish(id: number): Promise<Post | undefined> {
-        // Check if post is already published
-        const [existingPost] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+        // Check if post exists and is not already published
+        const [existingPost] = await db
+            .select()
+            .from(posts)
+            .where(
+                and(
+                    eq(posts.id, id),
+                    isNull(posts.deleted_at)
+                )
+            )
+            .limit(1);
 
         if (!existingPost) {
             throw PostError.notFound(id);
         }
 
-        if (existingPost.publishedAt) {
+        if (existingPost.published_at) {
             throw PostError.alreadyPublished(id);
         }
 
         await db
             .update(posts)
-            .set({ publishedAt: new Date(), updatedAt: new Date() })
+            .set({ published_at: new Date(), updated_at: new Date() })
             .where(eq(posts.id, id));
 
-        // Fetch the updated post
-        const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+        // Fetch updated post
+        const [updatedPost] = await db
+            .select()
+            .from(posts)
+            .where(eq(posts.id, id))
+            .limit(1);
 
-        if (!post) {
-            throw PostError.notFound(id);
-        }
-
-        return post;
+        return updatedPost;
     },
 
     /**
-     * Unpublish a post
+     * Unpublish post
      */
     async unpublish(id: number): Promise<Post | undefined> {
         // Check if post exists and is published
-        const [existingPost] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+        const [existingPost] = await db
+            .select()
+            .from(posts)
+            .where(
+                and(
+                    eq(posts.id, id),
+                    isNull(posts.deleted_at)
+                )
+            )
+            .limit(1);
 
         if (!existingPost) {
             throw PostError.notFound(id);
         }
 
-        if (!existingPost.publishedAt) {
+        if (!existingPost.published_at) {
             throw PostError.notPublished(id);
-        }
-
-        if (existingPost.deletedAt) {
-            throw PostError.alreadyDeleted(id);
         }
 
         await db
             .update(posts)
-            .set({ publishedAt: null, updatedAt: new Date() })
-            .where(and(eq(posts.id, id), isNull(posts.deletedAt)));
+            .set({ published_at: null, updated_at: new Date() })
+            .where(eq(posts.id, id));
 
-        // Fetch the updated post
-        const [post] = await db.select().from(posts).where(and(eq(posts.id, id), isNull(posts.deletedAt))).limit(1);
+        // Fetch updated post
+        const [updatedPost] = await db
+            .select()
+            .from(posts)
+            .where(eq(posts.id, id))
+            .limit(1);
 
-        if (!post) {
-            throw PostError.notFound(id);
-        }
-
-        return post;
+        return updatedPost;
     },
 
     /**
-     * Restore a soft-deleted post
+     * Soft delete post
+     */
+    async delete(id: number): Promise<boolean> {
+        await db
+            .update(posts)
+            .set({ deleted_at: new Date(), updated_at: new Date() })
+            .where(eq(posts.id, id));
+
+        // Verify the update was successful by checking if post exists
+        const [post] = await db
+            .select()
+            .from(posts)
+            .where(eq(posts.id, id))
+            .limit(1);
+
+        return !!post;
+    },
+
+    /**
+     * Restore soft deleted post
      */
     async restore(id: number): Promise<Post | undefined> {
         await db
             .update(posts)
-            .set({ deletedAt: null, updatedAt: new Date() })
+            .set({ deleted_at: null, updated_at: new Date() })
             .where(eq(posts.id, id));
 
-        // Fetch the restored post
-        const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+        // Fetch restored post
+        const [restoredPost] = await db
+            .select()
+            .from(posts)
+            .where(eq(posts.id, id))
+            .limit(1);
 
-        return post;
+        return restoredPost;
     },
 
     /**
-     * Hard delete post by ID (permanently removes from database)
+     * Hard delete post (permanently remove)
      */
     async hardDelete(id: number): Promise<boolean> {
         await db.delete(posts).where(eq(posts.id, id));
-        // Verify hard delete by trying to fetch the post
-        const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
 
-        return !post; // Return true if post was hard deleted (not found)
+        // Verify the delete was successful by checking if post exists
+        const [post] = await db
+            .select()
+            .from(posts)
+            .where(eq(posts.id, id))
+            .limit(1);
+
+        return !post; // Return true if post was deleted (not found)
     },
 
     /**
-     * Find soft-deleted posts (for administrative purposes)
+     * Find soft deleted posts
      */
     async findDeleted(limit = 50, offset = 0): Promise<Post[]> {
         return db
             .select()
             .from(posts)
-            .where(isNotNull(posts.deletedAt))
-            .orderBy(desc(posts.deletedAt))
+            .where(isNotNull(posts.deleted_at))
             .limit(limit)
             .offset(offset);
-    },
-
-    /**
-     * Find post by ID including soft-deleted posts
-     */
-    async findByIdIncludingDeleted(id: number): Promise<Post | undefined> {
-        const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
-
-        return post;
-    },
+    }
 };
