@@ -1,4 +1,4 @@
-import { AppError, type ErrorContextData } from './base.js';
+import { AppError, type ErrorContext } from './base.js';
 
 /**
  * DatabaseError - Static factory for creating database-related errors
@@ -8,7 +8,7 @@ export class DatabaseError extends AppError {
     /**
      * Database constraint violation error
      */
-    static constraintViolation(operation: string, constraint: string, context: ErrorContextData = {}): DatabaseError {
+    static constraintViolation(operation: string, constraint: string, context: ErrorContext = {}): DatabaseError {
         return new DatabaseError(
             'Database constraint violation',
             409,
@@ -20,7 +20,7 @@ export class DatabaseError extends AppError {
     /**
      * Database connection error
      */
-    static connectionFailed(context: ErrorContextData = {}): DatabaseError {
+    static connectionFailed(context: ErrorContext = {}): DatabaseError {
         return new DatabaseError(
             'Database connection failed',
             503,
@@ -32,7 +32,7 @@ export class DatabaseError extends AppError {
     /**
      * Database query execution error
      */
-    static queryFailed(operation: string, context: ErrorContextData = {}): DatabaseError {
+    static queryFailed(operation: string, context: ErrorContext = {}): DatabaseError {
         return new DatabaseError(
             'Database query failed',
             500,
@@ -44,7 +44,7 @@ export class DatabaseError extends AppError {
     /**
      * Database transaction error
      */
-    static transactionFailed(operation: string, context: ErrorContextData = {}): DatabaseError {
+    static transactionFailed(operation: string, context: ErrorContext = {}): DatabaseError {
         return new DatabaseError(
             'Database transaction failed',
             500,
@@ -56,7 +56,7 @@ export class DatabaseError extends AppError {
     /**
      * Database migration error
      */
-    static migrationFailed(migration: string, context: ErrorContextData = {}): DatabaseError {
+    static migrationFailed(migration: string, context: ErrorContext = {}): DatabaseError {
         return new DatabaseError(
             'Database migration failed',
             500,

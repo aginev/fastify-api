@@ -1,12 +1,12 @@
 import type { FastifyError } from 'fastify';
 
-export interface ErrorContext {
+export interface ContextualError {
     context: Record<string, unknown>;
 }
 
-export type ErrorContextData = Record<string, unknown>;
+export type ErrorContext = Record<string, unknown>;
 
-export class AppError extends Error implements FastifyError, ErrorContext {
+export class AppError extends Error implements FastifyError, ContextualError {
     public statusCode: number;
     public code: string;
     public context: Record<string, unknown> = {};
@@ -15,7 +15,7 @@ export class AppError extends Error implements FastifyError, ErrorContext {
         message: string,
         statusCode: number,
         code: string,
-        context: Record<string, unknown> = {}
+        context: ErrorContext = {}
     ) {
         super(message);
         this.statusCode = statusCode;
