@@ -45,9 +45,11 @@ export const userService = {
                 if (user.email === userData.email) {
                     return 'email';
                 }
+
                 if (user.username === userData.username) {
                     return 'username';
                 }
+
                 return null;
             }).filter(Boolean);
 
@@ -191,6 +193,7 @@ export const userService = {
             : eq(users.email, email);
 
         const [existingUser] = await db.select().from(users).where(query).limit(1);
+        
         return !existingUser;
     },
 
@@ -203,6 +206,7 @@ export const userService = {
             : eq(users.username, username);
 
         const [existingUser] = await db.select().from(users).where(query).limit(1);
+        
         return !existingUser;
     },
 
@@ -232,9 +236,11 @@ export const userService = {
             if (user.email === email) {
                 return 'email';
             }
+
             if (user.username === username) {
                 return 'username';
             }
+            
             return null;
         }).filter(Boolean) as string[];
 
