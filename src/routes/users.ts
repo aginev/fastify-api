@@ -3,8 +3,7 @@ import type { Request, Reply } from '../types';
 import { userService } from '../services/users.service.js';
 import { UserError } from '../errors/index.js';
 import {
-    CreateUserSchema,
-    UpdateUserSchema,
+    UserDataSchema,
     UserParamsSchema,
     ChangePasswordSchema
 } from '../models/user.model';
@@ -32,7 +31,7 @@ export async function userRoutes(app: FastifyInstance) {
 
     // Create new user
     app.post('/', async (req: Request, reply: Reply) => {
-        const userData = CreateUserSchema.parse(req.body);
+        const userData = UserDataSchema.parse(req.body);
 
         // Transform to match database schema
         const drizzleUserData = {
@@ -51,7 +50,7 @@ export async function userRoutes(app: FastifyInstance) {
     // Update user
     app.put('/:id', async (req: Request, reply: Reply) => {
         const params = UserParamsSchema.parse(req.params);
-        const userData = UpdateUserSchema.parse(req.body);
+        const userData = UserDataSchema.parse(req.body);
 
         // Transform to match database schema
         const drizzleUserData: any = {};
