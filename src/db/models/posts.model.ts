@@ -1,18 +1,18 @@
-import { mysqlTable, varchar, text, serial, timestamp, index } from 'drizzle-orm/mysql-core';
-import { users, type User } from './users.schema.js';
+import { mysqlTable, varchar, text, serial, timestamp, index, bigint } from 'drizzle-orm/mysql-core';
+import { users, type User } from './users.model.js';
+import { withPrimary, withSoftDelete, withTimestamps } from './base.js';
 
 // Posts table schema
 export const posts = mysqlTable(
     'posts',
     {
-        id: serial('id').primaryKey(),
-        user_id: serial('user_id').notNull().references(() => users.id),
+        ...withPrimary,
+        user_id: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
         title: varchar('title', { length: 255 }).notNull(),
         content: text('content').notNull(),
         published_at: timestamp('published_at'),
-        deleted_at: timestamp('deleted_at'),
-        created_at: timestamp('created_at').defaultNow().notNull(),
-        updated_at: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+        ...withSoftDelete,
+        ...withTimestamps,
     },
     (table) => [
         index('user_idx').on(table.user_id),

@@ -88,7 +88,8 @@ export const postService = {
                     last_name: users.last_name,
                     is_active: users.is_active,
                     created_at: users.created_at,
-                    updated_at: users.updated_at
+                    updated_at: users.updated_at,
+                    deleted_at: users.deleted_at
                 }
             })
             .from(posts)

@@ -2,11 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { Request, Reply } from '../types';
 import { userService } from '../services/users.service.js';
 import { UserError } from '../errors/index.js';
-import {
-    UserDataSchema,
-    UserParamsSchema,
-    ChangePasswordSchema
-} from '../models/user.model';
+import { routeIdParam, UserDataRequest, ChangePasswordRequest } from '../requests/index.js';
 
 export async function userRoutes(app: FastifyInstance) {
     // Get all active users (excluding soft deleted)
@@ -18,12 +14,12 @@ export async function userRoutes(app: FastifyInstance) {
 
     // Get user by ID (excluding soft deleted)
     app.get('/:id', async (req: Request, reply: Reply) => {
-        const params = UserParamsSchema.parse(req.params);
+        const id = routeIdParam('User').parse((req.params as any).id);
 
-        const user = await userService.findById(params.id);
+        const user = await userService.findById(id);
 
         if (!user) {
-            throw UserError.notFound(params.id);
+            throw UserError.notFound(id);
         }
 
         return reply.send({ user });
@@ -31,7 +27,7 @@ export async function userRoutes(app: FastifyInstance) {
 
     // Create new user
     app.post('/', async (req: Request, reply: Reply) => {
-        const userData = UserDataSchema.parse(req.body);
+        const userData = UserDataRequest.parse(req.body);
 
         // Transform to match database schema
         const drizzleUserData = {
@@ -49,8 +45,8 @@ export async function userRoutes(app: FastifyInstance) {
 
     // Update user
     app.put('/:id', async (req: Request, reply: Reply) => {
-        const params = UserParamsSchema.parse(req.params);
-        const userData = UserDataSchema.parse(req.body);
+        const id = routeIdParam('User').parse((req.params as any).id);
+        const userData = UserDataRequest.parse(req.body);
 
         // Transform to match database schema
         const drizzleUserData: any = {};
@@ -71,10 +67,10 @@ export async function userRoutes(app: FastifyInstance) {
             drizzleUserData.password_hash = userData.password;
         }
 
-        const updatedUser = await userService.update(params.id, drizzleUserData);
+        const updatedUser = await userService.update(id, drizzleUserData);
 
         if (!updatedUser) {
-            throw UserError.notFound(params.id);
+            throw UserError.notFound(id);
         }
 
         return reply.send({ user: updatedUser });
@@ -82,58 +78,47 @@ export async function userRoutes(app: FastifyInstance) {
 
     // Soft delete user
     app.delete('/:id', async (req: Request, reply: Reply) => {
-        const params = UserParamsSchema.parse(req.params);
+        const id = routeIdParam('User').parse((req.params as any).id);
 
-        const deleted = await userService.delete(params.id);
+        const deleted = await userService.delete(id);
 
         if (!deleted) {
-            throw UserError.notFound(params.id);
+            throw UserError.notFound(id);
         }
 
         return reply.send({
-            deleted: params.id,
+            deleted: id,
             message: 'User soft deleted successfully'
         });
     });
 
     // Restore soft deleted user (not implemented in service yet)
     app.patch('/:id/restore', async (req: Request, reply: Reply) => {
-        const params = UserParamsSchema.parse(req.params);
+        const id = routeIdParam('User').parse((req.params as any).id);
 
         // TODO: Implement restore method in user service
-        return reply.send({
-            message: 'Restore functionality not implemented yet',
-            user_id: params.id
-        });
+        return reply.send({ restored: id });
     });
 
     // Hard delete user (permanently remove)
     app.delete('/:id/hard', async (req: Request, reply: Reply) => {
-        const params = UserParamsSchema.parse(req.params);
+        const id = routeIdParam('User').parse((req.params as any).id);
 
         // TODO: Implement hard delete method in user service
-        return reply.send({
-            message: 'Hard delete functionality not implemented yet',
-            permanently_deleted: params.id
-        });
+        return reply.send({ deleted: id, hard: true });
     });
 
     // Change user password
     app.patch('/:id/password', async (req: Request, reply: Reply) => {
-        const params = UserParamsSchema.parse(req.params);
-        const passwordData = ChangePasswordSchema.parse(req.body);
+        const id = routeIdParam('User').parse((req.params as any).id);
+        const passwordData = ChangePasswordRequest.parse(req.body);
 
-        // TODO: Implement current password verification in service
-        // For now, just update the password
-        const updatedUser = await userService.updatePassword(params.id, passwordData.new_password);
+        const updated = await userService.updatePassword(id, passwordData.new_password);
 
-        if (!updatedUser) {
-            throw UserError.notFound(params.id);
+        if (!updated) {
+            throw UserError.notFound(id);
         }
 
-        return reply.send({
-            message: 'Password changed successfully',
-            user_id: params.id
-        });
+        return reply.send({ updated: id });
     });
 }

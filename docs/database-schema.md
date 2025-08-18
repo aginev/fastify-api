@@ -9,10 +9,10 @@ The database schema is organized into individual files for each table, providing
 ## Structure
 
 ```
-src/db/schemas/
+src/db/models/
 ├── index.ts               # Main export file
-├── users.schema.ts        # Users table schema
-└── posts.schema.ts        # Posts table schema
+├── users.model.ts         # Users table model
+└── posts.model.ts         # Posts table model
 ```
 
 ## Benefits of Separated Schemas
@@ -25,48 +25,46 @@ src/db/schemas/
 
 ## Current Tables
 
-### Users Table (`users.schema.ts`)
+### Users Table (`users.model.ts`)
 
 **Purpose:** User accounts and authentication
 
 **Fields:**
 - `id` - Primary key, auto-increment
 - `email` - Unique email address (255 chars)
-- `username` - Unique username (100 chars)
-- `passwordHash` - Hashed password (255 chars)
-- `firstName` - First name (100 chars, optional)
-- `lastName` - Last name (100 chars, optional)
-- `isActive` - Account status (boolean, default: true)
-- `createdAt` - Creation timestamp
-- `updatedAt` - Last update timestamp
+- `password_hash` - Hashed password (255 chars)
+- `first_name` - First name (100 chars, optional)
+- `last_name` - Last name (100 chars, optional)
+- `is_active` - Account status (boolean, default: true)
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
 
 **Indexes:**
 - `email_idx` - On email field for fast lookups
-- `username_idx` - On username field for fast lookups
 
 **Types:**
 - `User` - Complete user record
 - `NewUser` - Data for creating a user
 - `UpdateUser` - Partial data for updating a user
 
-### Posts Table (`posts.schema.ts`)
+### Posts Table (`posts.model.ts`)
 
 **Purpose:** Blog posts and content
 
 **Fields:**
 - `id` - Primary key, auto-increment
 - `title` - Post title (255 chars, required)
-- `content` - Post content (text, optional)
-- `userId` - Foreign key to users table
-- `publishedAt` - Publication timestamp (null if not published)
-- `deletedAt` - Soft delete timestamp (null if not deleted)
-- `createdAt` - Creation timestamp
-- `updatedAt` - Last update timestamp
+- `content` - Post content (text, required)
+- `user_id` - Foreign key to users table
+- `published_at` - Publication timestamp (null if not published)
+- `deleted_at` - Soft delete timestamp (null if not deleted)
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
 
 **Indexes:**
-- `user_idx` - On userId for fast user queries
-- `published_idx` - On publishedAt for filtering published posts
-- `deleted_idx` - On deletedAt for soft delete queries
+- `user_idx` - On user_id for fast user queries
+- `published_idx` - On published_at for filtering published posts
+- `deleted_idx` - On deleted_at for soft delete queries
 
 **Types:**
 - `Post` - Complete post record
@@ -75,7 +73,7 @@ src/db/schemas/
 - `PostWithUser` - Post with user information
 
 **Relationships:**
-- `userId` references `users.id` (foreign key)
+- `user_id` references `users.id` (foreign key)
 - One-to-many relationship: A user can have multiple posts
 
 **Publication Status:**
@@ -135,9 +133,9 @@ type PostWithUser = Post & { user: User };
 
 ## Adding a New Table
 
-### 1. Create Schema File
+### 1. Create Model File
 
-Create a new file `src/db/schemas/your-table.schema.ts`:
+Create a new file `src/db/models/your-table.model.ts`:
 
 ```typescript
 import { mysqlTable, varchar, int, timestamp, boolean, index } from 'drizzle-orm/mysql-core';
@@ -147,9 +145,9 @@ export const yourTable = mysqlTable(
     {
         id: int('id').primaryKey().autoincrement(),
         name: varchar('name', { length: 100 }).notNull(),
-        isActive: boolean('is_active').default(true),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+        is_active: boolean('is_active').default(true),
+        created_at: timestamp('created_at').defaultNow().notNull(),
+        updated_at: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     },
     (table) => ({
         nameIdx: index('your_table_name_idx').on(table.name),
@@ -159,23 +157,23 @@ export const yourTable = mysqlTable(
 // Export types
 export type YourTable = typeof yourTable.$inferSelect;
 export type NewYourTable = typeof yourTable.$inferInsert;
-export type UpdateYourTable = Partial<Omit<NewYourTable, 'id' | 'createdAt' | 'updatedAt'>>;
+export type UpdateYourTable = Partial<Omit<NewYourTable, 'id' | 'created_at' | 'updated_at'>>;
 ```
 
 ### 2. Add to Index
 
-Update `src/db/schemas/index.ts`:
+Update `src/db/models/index.ts`:
 
 ```typescript
-// Export all table schemas
-export * from './users.schema.js';
-export * from './posts.schema.js';
-export * from './your-table.schema.js';  // Add this line
+// Export all table models
+export * from './users.model.js';
+export * from './posts.model.js';
+export * from './your-table.model.js';  // Add this line
 
 // Re-export commonly used types
-export type { User, NewUser, UpdateUser } from './users.schema.js';
-export type { Post, NewPost, UpdatePost } from './posts.schema.js';
-export type { YourTable, NewYourTable, UpdateYourTable } from './your-table.schema.js';  // Add this line
+export type { User, NewUser, UpdateUser } from './users.model.js';
+export type { Post, NewPost, UpdatePost } from './posts.model.js';
+export type { YourTable, NewYourTable, UpdateYourTable } from './your-table.model.js';  // Add this line
 ```
 
 ### 3. Generate and Apply Migrations
@@ -188,7 +186,7 @@ pnpm db:generate
 pnpm db:push
 ```
 
-## Schema File Template
+## Model File Template
 
 Use this template for new tables:
 
@@ -208,23 +206,23 @@ export const tableName = mysqlTable(
         description: text('description'),
         
         // Boolean fields
-        isActive: boolean('is_active').default(true),
+        is_active: boolean('is_active').default(true),
         
         // Timestamps
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+        created_at: timestamp('created_at').defaultNow().notNull(),
+        updated_at: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     },
     (table) => ({
         // Indexes for performance
         nameIdx: index('table_name_idx').on(table.name),
-        activeIdx: index('table_active_idx').on(table.isActive),
+        activeIdx: index('table_active_idx').on(table.is_active),
     })
 );
 
 // Export types
 export type TableName = typeof tableName.$inferSelect;
 export type NewTableName = typeof tableName.$inferInsert;
-export type UpdateTableName = Partial<Omit<NewTableName, 'id' | 'createdAt' | 'updatedAt'>>;
+export type UpdateTableName = Partial<Omit<NewTableName, 'id' | 'created_at' | 'updated_at'>>;
 ```
 
 ## Best Practices
@@ -263,22 +261,22 @@ export type UpdateTableName = Partial<Omit<NewTableName, 'id' | 'createdAt' | 'u
 
 ## Migration Workflow
 
-1. **Modify Schema** - Update the appropriate `.schema.ts` file
+1. **Modify Model** - Update the appropriate `.model.ts` file
 2. **Generate Migration** - Run `pnpm db:generate`
 3. **Review Changes** - Check generated migration files in `./drizzle`
 4. **Apply Migration** - Run `pnpm db:push` or `pnpm db:migrate`
-5. **Test Changes** - Verify the new schema works correctly
+5. **Test Changes** - Verify the new model works correctly
 
-## Working with Schemas
+## Working with Models
 
 ### Importing Tables
 
 ```typescript
 // Import specific tables
-import { users, posts } from '../db/schemas/index.js';
+import { users, posts } from '../db/models/index.js';
 
 // Import types
-import type { User, NewUser, Post } from '../db/schemas/index.js';
+import type { User, NewUser, Post } from '../db/models/index.js';
 ```
 
 ### Using in Queries
@@ -324,12 +322,12 @@ const userPosts = await db
 ### Getting Help
 
 - Check Drizzle ORM documentation
-- Review existing schema files for examples
+- Review existing model files for examples
 - Test migrations on a development database first
 - Use `pnpm db:studio` to inspect database structure
 
 ## Related Documentation
 
 - [Database Setup](./database-setup.md) - Complete database configuration guide
-- [API Reference](./api-reference.md) - API endpoints that use these schemas
+- [API Reference](./api-reference.md) - API endpoints that use these models
 - [Development Guide](./development-guide.md) - Development workflow and best practices
