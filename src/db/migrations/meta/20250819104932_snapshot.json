@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "1ccb9804-4878-472d-88cc-414430def6df",
-  "prevId": "7d15dac5-9cc4-4f5f-8b2e-e968a0533892",
+  "id": "f670aea7-5343-405d-aa12-eb8e0265dd1a",
+  "prevId": "bdfdb02b-cdb5-47de-bc9e-3aca89694782",
   "tables": {
     "users": {
       "name": "users",
@@ -190,8 +190,8 @@
         }
       },
       "foreignKeys": {
-        "posts_user_id_users_id_fk": {
-          "name": "posts_user_id_users_id_fk",
+        "posts_user_id_fk": {
+          "name": "posts_user_id_fk",
           "tableFrom": "posts",
           "tableTo": "users",
           "columnsFrom": [
@@ -200,8 +200,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {

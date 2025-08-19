@@ -1,5 +1,5 @@
-import { eq, or, and, ne } from 'drizzle-orm';
-import { db, users, posts, type User, type NewUser, type UpdateUser, type UserWithPosts } from '../db/index.js';
+import { eq, or, and, ne, isNull } from 'drizzle-orm';
+import { db, users, posts, type User, type NewUser, type UpdateUser } from '../db/index.js';
 import bcrypt from 'bcrypt';
 import {
     UserError
@@ -226,25 +226,27 @@ export const userService = {
     },
 
     /**
-     * Find user with their posts
+     * Find user with their posts using Drizzle relations
      */
-    async findByIdWithPosts(id: number): Promise<UserWithPosts | undefined> {
-        // First, get the user
-        const user = await this.findById(id);
-        if (!user) {
-            return undefined;
-        }
+    async findByIdWithPosts(id: number) {
+        const [user] = await db.query.users.findMany({
+            where: eq(users.id, id),
+            with: {
+                posts: {
+                    where: isNull(posts.deleted_at),
+                    columns: {
+                        id: true,
+                        title: true,
+                        content: true,
+                        published_at: true,
+                        created_at: true,
+                        updated_at: true
+                    }
+                }
+            },
+            limit: 1
+        });
 
-        // Then, get their posts
-        const userPosts = await db
-            .select()
-            .from(posts)
-            .where(eq(posts.user_id, id));
-
-        // Combine user and posts
-        return {
-            ...user,
-            posts: userPosts
-        };
+        return user;
     }
 };

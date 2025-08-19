@@ -71,7 +71,8 @@ docker-compose stop mariadb
 | `pnpm db:up` | Start all services in background |
 | `pnpm db:down` | Stop and remove all services |
 | `pnpm db:logs` | View database logs |
-| `pnpm db:reset` | Reset database (removes all data) |
+| `pnpm db:reset` | Reset database (removes all data and cleans data directory) |
+| `pnpm db:clean` | Clean data directory only (preserves .gitkeep) |
 | `pnpm db:shell` | Access MariaDB shell |
 
 ## Data Directory Structure
@@ -272,6 +273,22 @@ pnpm db:shell
 # Fix volume permissions
 sudo chown -R 999:999 ./docker/mariadb/logs
 sudo chown -R 999:999 ./docker/mariadb/conf
+```
+
+#### 5. Reset Database
+
+```bash
+# Complete reset (stops containers, cleans data directory, restarts)
+pnpm db:reset
+
+# Clean data directory only (preserves .gitkeep)
+pnpm db:clean
+
+# Manual reset process:
+docker-compose down -v
+rm -rf docker/mariadb/data/*
+touch docker/mariadb/data/.gitkeep
+docker-compose up -d
 ```
 
 ### Performance Tuning

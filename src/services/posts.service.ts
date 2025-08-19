@@ -1,5 +1,5 @@
 import { eq, isNull, isNotNull, and } from 'drizzle-orm';
-import { db, posts, users, type Post, type NewPost, type UpdatePost, type PostWithUser, type SafeUser } from '../db/index.js';
+import { db, posts, type Post, type NewPost, type UpdatePost } from '../db/index.js';
 import { PostError } from '../errors/index.js';
 
 /**
@@ -75,55 +75,36 @@ export const postService = {
     },
 
     /**
-     * Find post with user information
+     * Find post with user information using Drizzle relations
      */
-    async findByIdWithUser(id: number): Promise<PostWithUser | undefined> {
-        const [post] = await db
-            .select({
-                id: posts.id,
-                user_id: posts.user_id,
-                title: posts.title,
-                content: posts.content,
-                published_at: posts.published_at,
-                deleted_at: posts.deleted_at,
-                created_at: posts.created_at,
-                updated_at: posts.updated_at,
+    async findByIdWithUser(id: number) {
+        const [post] = await db.query.posts.findMany({
+            where: and(
+                eq(posts.id, id),
+                isNull(posts.deleted_at)
+            ),
+            with: {
                 user: {
-                    id: users.id,
-                    email: users.email,
-                    first_name: users.first_name,
-                    last_name: users.last_name,
-                    is_active: users.is_active,
-                    created_at: users.created_at,
-                    updated_at: users.updated_at,
-                    deleted_at: users.deleted_at
+                    columns: {
+                        id: true,
+                        email: true,
+                        first_name: true,
+                        last_name: true,
+                        is_active: true,
+                        created_at: true,
+                        updated_at: true,
+                        deleted_at: true
+                    }
                 }
-            })
-            .from(posts)
-            .innerJoin(users, eq(posts.user_id, users.id))
-            .where(
-                and(
-                    eq(posts.id, id),
-                    isNull(posts.deleted_at)
-                )
-            )
-            .limit(1);
+            },
+            limit: 1
+        });
 
         if (!post) {
             throw PostError.notFound(id);
         }
 
-        return {
-            id: post.id,
-            user_id: post.user_id,
-            title: post.title,
-            content: post.content,
-            published_at: post.published_at,
-            deleted_at: post.deleted_at,
-            created_at: post.created_at,
-            updated_at: post.updated_at,
-            user: post.user
-        };
+        return post;
     },
 
     /**
