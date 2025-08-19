@@ -1,6 +1,6 @@
-import { mysqlTable, varchar, serial, timestamp, boolean, index } from 'drizzle-orm/mysql-core';
-import { type Post } from './posts.model.js';
-import { withActiveStatus, withPrimary, withSoftDelete, withTimestamps } from './base.js';
+import { mysqlTable, varchar, timestamp, boolean, index } from 'drizzle-orm/mysql-core';
+import { type Post } from './posts.model';
+import { withActiveStatus, withPrimary, withSoftDelete, withTimestamps } from './base';
 
 // Users table schema
 export const users = mysqlTable(
@@ -8,9 +8,9 @@ export const users = mysqlTable(
     {
         ...withPrimary,
         email: varchar('email', { length: 255 }).notNull().unique(),
-        password_hash: varchar('password_hash', { length: 255 }).notNull(),
-        first_name: varchar('first_name', { length: 100 }),
-        last_name: varchar('last_name', { length: 100 }),
+        password: varchar('password', { length: 255 }).notNull(),
+        first_name: varchar('first_name', { length: 100 }).notNull(),
+        last_name: varchar('last_name', { length: 100 }).notNull(),
         ...withActiveStatus,
         ...withSoftDelete,
         ...withTimestamps,
@@ -22,8 +22,8 @@ export const users = mysqlTable(
 
 // Export types for use in your application
 export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-export type UpdateUser = Partial<Omit<NewUser, 'id' | 'created_at' | 'updated_at'>>;
+export type NewUser = Omit<User, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+export type UpdateUser = Partial<Omit<NewUser, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>>;
 
 // Relationship types
 export type UserWithPosts = User & {

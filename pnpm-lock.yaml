@@ -32,6 +32,9 @@ importers:
       drizzle-orm:
         specifier: ^0.44.4
         version: 0.44.4(mysql2@3.14.3)
+      drizzle-zod:
+        specifier: ^0.8.3
+        version: 0.8.3(drizzle-orm@0.44.4(mysql2@3.14.3))(zod@4.0.17)
       fastify:
         specifier: ^5.5.0
         version: 5.5.0
@@ -800,6 +803,12 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drizzle-zod@0.8.3:
+    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.0'
+      zod: ^3.25.0 || ^4.0.0
 
   end-of-stream@1.4.5:
     resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==}
@@ -1992,6 +2001,11 @@ snapshots:
   drizzle-orm@0.44.4(mysql2@3.14.3):
     optionalDependencies:
       mysql2: 3.14.3
+
+  drizzle-zod@0.8.3(drizzle-orm@0.44.4(mysql2@3.14.3))(zod@4.0.17):
+    dependencies:
+      drizzle-orm: 0.44.4(mysql2@3.14.3)
+      zod: 4.0.17
 
   end-of-stream@1.4.5:
     dependencies:

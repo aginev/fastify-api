@@ -28,17 +28,7 @@ export async function userRoutes(app: FastifyInstance) {
     // Create new user
     app.post('/', async (req: Request, reply: Reply) => {
         const userData = UserDataRequest.parse(req.body);
-
-        // Transform to match database schema
-        const drizzleUserData = {
-            email: userData.email,
-            password_hash: userData.password,
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            is_active: true
-        };
-
-        const newUser = await userService.create(drizzleUserData);
+        const newUser = await userService.create(userData);
 
         return reply.code(201).send({ user: newUser });
     });
@@ -48,26 +38,8 @@ export async function userRoutes(app: FastifyInstance) {
         const id = routeIdParam('User').parse((req.params as any).id);
         const userData = UserDataRequest.parse(req.body);
 
-        // Transform to match database schema
-        const drizzleUserData: any = {};
-
-        if (userData.first_name !== undefined) {
-            drizzleUserData.first_name = userData.first_name;
-        }
-
-        if (userData.last_name !== undefined) {
-            drizzleUserData.last_name = userData.last_name;
-        }
-
-        if (userData.email !== undefined) {
-            drizzleUserData.email = userData.email;
-        }
-
-        if (userData.password !== undefined) {
-            drizzleUserData.password_hash = userData.password;
-        }
-
-        const updatedUser = await userService.update(id, drizzleUserData);
+        // No transformation needed - drizzle-zod schema handles field mapping
+        const updatedUser = await userService.update(id, userData);
 
         if (!updatedUser) {
             throw UserError.notFound(id);

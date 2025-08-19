@@ -32,9 +32,9 @@ src/db/models/
 **Fields:**
 - `id` - Primary key, auto-increment
 - `email` - Unique email address (255 chars)
-- `password_hash` - Hashed password (255 chars)
-- `first_name` - First name (100 chars, optional)
-- `last_name` - Last name (100 chars, optional)
+- `password` - Hashed password (255 chars)
+- `first_name` - First name (100 chars, required)
+- `last_name` - Last name (100 chars, required)
 - `is_active` - Account status (boolean, default: true)
 - `created_at` - Creation timestamp
 - `updated_at` - Last update timestamp

@@ -1,6 +1,6 @@
-import { mysqlTable, varchar, text, serial, timestamp, index, bigint } from 'drizzle-orm/mysql-core';
-import { users, type User } from './users.model.js';
-import { withPrimary, withSoftDelete, withTimestamps } from './base.js';
+import { mysqlTable, varchar, text, timestamp, index, bigint } from 'drizzle-orm/mysql-core';
+import { users, type User } from './users.model';
+import { withPrimary, withSoftDelete, withTimestamps } from './base';
 
 // Posts table schema
 export const posts = mysqlTable(
@@ -23,11 +23,14 @@ export const posts = mysqlTable(
 
 // Export types for use in your application
 export type Post = typeof posts.$inferSelect;
-export type NewPost = typeof posts.$inferInsert;
-export type UpdatePost = Partial<Omit<NewPost, 'id' | 'created_at' | 'updated_at'>>;
+export type NewPost = Partial<Omit<Post, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>>;
+export type UpdatePost = Partial<Omit<NewPost, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>>;
+
+// Safe user type that excludes sensitive fields
+export type SafeUser = Omit<User, 'password'>;
 
 // Relationship types
 export type PostWithUser = Post & {
-    user: User;
+    user: SafeUser;
 };
 

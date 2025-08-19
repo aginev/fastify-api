@@ -40,11 +40,11 @@ export const userService = {
         }
 
         // Hash the password before storing
-        const hashedPassword = await this.hashPassword(userData.password_hash);
+        const hashedPassword = await this.hashPassword(userData.password);
 
         const userToCreate = {
             ...userData,
-            password_hash: hashedPassword,
+            password: hashedPassword,
         };
 
         // Use $returningId() to get the inserted ID directly from MySQL
@@ -88,7 +88,7 @@ export const userService = {
         }
 
         // Verify password
-        const isValidPassword = await this.verifyPassword(password, user.password_hash);
+        const isValidPassword = await this.verifyPassword(password, user.password);
 
         if (!isValidPassword) {
             return null;
@@ -106,7 +106,7 @@ export const userService = {
         await db
             .update(users)
             .set({
-                password_hash: hashedPassword,
+                password: hashedPassword,
                 updated_at: new Date()
             })
             .where(eq(users.id, userId));
@@ -186,8 +186,9 @@ export const userService = {
 
         // Hash password if provided
         let updateData = { ...userData, updated_at: new Date() };
-        if (userData.password_hash) {
-            updateData.password_hash = await this.hashPassword(userData.password_hash);
+
+        if (userData.password) {
+            updateData.password = await this.hashPassword(userData.password);
         }
 
         await db

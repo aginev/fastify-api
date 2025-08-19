@@ -1,23 +1,31 @@
 import { z } from 'zod';
+import { createInsertSchema } from 'drizzle-zod';
+import { users } from '../db/models/users.model.js';
 
-const userFields = {
-    first_name: z.string().min(1, 'First name is required').max(100, 'First name must be less than 100 characters'),
-    last_name: z.string().min(1, 'Last name is required').max(100, 'Last name must be less than 100 characters'),
-    email: z.email({ error: 'Email must be a valid email address' }),
+// Generate Zod schema directly from Drizzle table definition
+export const UserDataRequest = createInsertSchema(users, {
+    // Override fields that shouldn't be in API requests
+    id: z.never(), // Never allow ID in requests
+    created_at: z.never(), // Never allow created_at in requests
+    updated_at: z.never(), // Never allow updated_at in requests
+    deleted_at: z.never(), // Never allow deleted_at in requests
+
+    // Password field with custom validation
     password: z.string().min(8, 'Password must be at least 8 characters long').max(255, 'Password must be less than 255 characters').refine(
         (password) => validatePasswordStrength(password).isValid,
         { message: 'Password must contain at least 8 characters, mixed case, numbers, and special characters' }
-    ),
-};
+    ).describe('Password field (will be hashed before storage)'),
 
-// Input validation schemas (for API requests)
-export const UserDataRequest = z.object({
-    ...userFields,
+    // Override is_active to have a default value
+    is_active: z.boolean().default(true),
 });
 
 export const ChangePasswordRequest = z.object({
     current_password: z.string().min(1, 'Current password is required'),
-    new_password: userFields.password
+    new_password: z.string().min(8, 'Password must be at least 8 characters long').max(255, 'Password must be less than 255 characters').refine(
+        (password) => validatePasswordStrength(password).isValid,
+        { message: 'Password must contain at least 8 characters, mixed case, numbers, and special characters' }
+    ),
 });
 
 // Type exports for request validation

@@ -6,16 +6,19 @@ Welcome to the project documentation! This directory contains comprehensive guid
 
 ### 🚀 Getting Started
 - [Project Setup](./project-setup.md) - Complete project setup guide
-- [Database Setup](./database-setup.md) - Drizzle ORM and MariaDB configuration
 - [Development Guide](./development-guide.md) - Local development setup and workflow
 
 ### 🛠️ Development
 - [API Reference](./api-reference.md) - API endpoints and usage
-- [Database Schema](./database-schema.md) - Database table schemas and structure
 - [Services Structure](./services-structure.md) - Business logic organization by resource
 - [Configuration Structure](./configuration-structure.md) - Application configuration organization
 - [Environment Variables](./environment-variables.md) - Configuration options and setup
 - [Error Handling System](./error-handling-system.md) - Error handling architecture and patterns
+
+### 🗄️ Database
+- [Database Schema](./database-schema.md) - Database table schemas and structure
+- [Drizzle Migrations](./drizzle-migrations.md) - Database migration system and workflow
+- [Migration Quick Start](./migration-quickstart.md) - Get started with migrations in 5 minutes
 
 ### 🐳 Infrastructure
 - [Docker Guide](./docker-guide.md) - Container configuration and management

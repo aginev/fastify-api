@@ -1,18 +1,20 @@
 import { z } from 'zod';
+import { createInsertSchema } from 'drizzle-zod';
+import { posts } from '../db/models/posts.model.js';
 
-const postFields = {
-    user_id: z.number().int().positive('User ID must be a positive integer'),
-    title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters'),
-    content: z.string().min(1, 'Content is required'),
+// Generate Zod schema directly from Drizzle table definition
+export const PostDataRequest = createInsertSchema(posts, {
+    // Override fields that shouldn't be in API requests
+    id: z.never(), // Never allow ID in requests
+    created_at: z.never(), // Never allow created_at in requests
+    updated_at: z.never(), // Never allow updated_at in requests
+    deleted_at: z.never(), // Never allow deleted_at in requests
+
+    // Override published_at to accept date or null
     published_at: z.date().nullable().default(null).refine(
         (date) => !date || date <= new Date(),
         'Published date cannot be in the future'
     ),
-};
-
-// Input validation schemas (for API requests)
-export const PostDataRequest = z.object({
-    ...postFields,
 });
 
 // Type exports for request validation

@@ -1,5 +1,5 @@
 import { eq, isNull, isNotNull, and } from 'drizzle-orm';
-import { db, posts, users, type Post, type NewPost, type UpdatePost, type PostWithUser } from '../db/index.js';
+import { db, posts, users, type Post, type NewPost, type UpdatePost, type PostWithUser, type SafeUser } from '../db/index.js';
 import { PostError } from '../errors/index.js';
 
 /**
@@ -11,7 +11,15 @@ export const postService = {
      */
     async create(postData: NewPost): Promise<Post> {
         // Use $returningId() to get the inserted ID directly from MySQL
-        const result = await db.insert(posts).values(postData).$returningId();
+        const result = await db
+            .insert(posts)
+            .values({
+                user_id: postData.user_id!,
+                title: postData.title!,
+                content: postData.content!,
+                ...(postData.published_at !== undefined ? { published_at: postData.published_at } : {}),
+            })
+            .$returningId();
 
         // $returningId() returns an array of { id: number } objects
         if (!result || result.length === 0) {
@@ -83,7 +91,6 @@ export const postService = {
                 user: {
                     id: users.id,
                     email: users.email,
-                    password_hash: users.password_hash,
                     first_name: users.first_name,
                     last_name: users.last_name,
                     is_active: users.is_active,
@@ -103,7 +110,7 @@ export const postService = {
             .limit(1);
 
         if (!post) {
-            return undefined;
+            throw PostError.notFound(id);
         }
 
         return {

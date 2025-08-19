@@ -40,7 +40,7 @@ CREATE TABLE users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,      -- Unique constraint
     username VARCHAR(100) NOT NULL UNIQUE,   -- Unique constraint
-    password_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     -- ... other fields
     PRIMARY KEY (id),
     UNIQUE KEY uk_email (email),
@@ -381,7 +381,7 @@ export const passwordService = {
             .limit(5);
 
         for (const historyEntry of passwordHistory) {
-            const isMatch = await bcrypt.compare(newPassword, historyEntry.passwordHash);
+            const isMatch = await bcrypt.compare(newPassword, historyEntry.password);
             if (isMatch) {
                 return true;
             }
@@ -412,7 +412,7 @@ CREATE INDEX idx_users_security ON users (failed_login_attempts, locked_until);
 CREATE TABLE password_history (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_user_id_created_at (user_id, created_at),

@@ -18,3 +18,5 @@ node_modules
 # Docker
 docker/mariadb/logs/*
 docker/mariadb/logs/.gitkeep
+docker/mariadb/data/*
+docker/mariadb/data/.gitkeep

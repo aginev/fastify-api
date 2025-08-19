@@ -27,7 +27,7 @@ The main database service running MariaDB 11.2.
 - **Root Password:** `db_pass`
 
 **Volumes:**
-- `db_data` - Persistent database storage
+- `./docker/mariadb/data` - Persistent database storage (bind mount)
 - `./docker/mariadb/init` - Initialization scripts
 - `./docker/mariadb/conf` - Custom configuration
 - `./docker/mariadb/logs` - Database logs
@@ -74,6 +74,25 @@ docker-compose stop mariadb
 | `pnpm db:reset` | Reset database (removes all data) |
 | `pnpm db:shell` | Access MariaDB shell |
 
+## Data Directory Structure
+
+The project now uses a bind mount for database persistence, storing data in the project directory:
+
+```
+docker/
+├── mariadb/
+│   ├── conf/           # MariaDB configuration files
+│   ├── init/           # Database initialization scripts
+│   ├── data/           # Database data files (persistent storage)
+│   └── logs/           # Database logs
+```
+
+**Benefits of this approach:**
+- Data is stored locally in the project directory
+- Easier to backup and version control
+- Better for development and testing environments
+- Consistent with the project structure
+
 ## Docker Compose Configuration
 
 ### Main Configuration
@@ -92,8 +111,8 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
-      - ./docker/mariadb/init:/docker-entrypoint-initdb-d
+      - ./docker/mariadb/data:/var/lib/mysql
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d
       - ./docker/mariadb/conf:/etc/mysql/conf.d
       - ./docker/mariadb/logs:/var/log/mysql
     networks:
