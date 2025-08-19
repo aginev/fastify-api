@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
+import { DrizzleError, DrizzleQueryError } from 'drizzle-orm';
 import { AppError } from '../errors/index.js';
 import { getLogLevel, type LogLevel } from '../utils/logging';
 
@@ -101,6 +102,47 @@ class AppErrorHandler implements ErrorHandler {
     }
 }
 
+class DrizzleErrorHandler implements ErrorHandler {
+    canHandle(err: Error): boolean {
+        return err instanceof DrizzleError || err instanceof DrizzleQueryError;
+    }
+
+    handle(err: DrizzleError | DrizzleQueryError): ErrorInfo {
+        // Handle DrizzleQueryError specifically for SQL query failures
+        if (err instanceof DrizzleQueryError) {
+            return {
+                statusCode: 400,
+                code: 'DATABASE_QUERY_ERROR',
+                message: 'Database query failed',
+                stack: err.stack,
+                context: {
+                    query: err.query,
+                    params: err.params,
+                    cause: err.cause?.message,
+                },
+            };
+        }
+
+        // Handle generic DrizzleError
+        return {
+            statusCode: 500,
+            code: 'DATABASE_ERROR',
+            message: 'Database operation failed',
+            stack: err.stack,
+            context: {
+                message: err.message,
+            },
+        };
+    }
+
+    buildResponse(errorInfo: ErrorInfo): ErrorResponse {
+        return {
+            error: 'Internal Server Error',
+            code: errorInfo.code,
+        };
+    }
+}
+
 class FastifyErrorHandler implements ErrorHandler {
     canHandle(err: Error): boolean {
         return 'statusCode' in err || 'code' in err;
@@ -145,6 +187,7 @@ export function createErrorHandler(app: FastifyInstance) {
     const registry = new ErrorHandlerRegistry();
 
     registry.register(new ZodErrorHandler());
+    registry.register(new DrizzleErrorHandler());
     registry.register(new AppErrorHandler());
     registry.register(new FastifyErrorHandler());
     registry.register(new GenericErrorHandler());
@@ -173,10 +216,9 @@ export function createErrorHandler(app: FastifyInstance) {
                 `${handler.constructor.name} error`
             );
         } catch (logError) {
-            app.log.error(
-                logData,
-                `${handler.constructor.name} error (fallback)`
-            );
+            // Fallback to console if logger fails
+            console.error('Logger error:', logError);
+            console.error('Original error:', logData);
         }
 
         // Send response
