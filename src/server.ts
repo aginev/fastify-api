@@ -15,19 +15,19 @@ import cors from '@fastify/cors';
 import underPressure from '@fastify/under-pressure';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { registerRoutes } from './routes';
+import { pool } from './db/connection';
 
 const port = serverConfig.port;
-const transport =
-    serverConfig.isDevelopment
-        ? {
-            target: 'pino-pretty',
-            options: {
-                singleLine: true,
-                colorize: true,
-                translateTime: 'SYS:standard',
-            },
-        }
-        : undefined;
+const transport = serverConfig.isDevelopment
+    ? {
+        target: 'pino-pretty',
+        options: {
+            singleLine: true,
+            colorize: true,
+            translateTime: 'SYS:standard',
+        },
+    }
+    : undefined;
 const options = {
     // Pino config
     logger: {
@@ -113,3 +113,20 @@ app.addHook(
 );
 
 export default app;
+
+// Graceful shutdown handling
+process.on('SIGINT', async () => {
+    app.log.info('🛑 Received SIGINT, shutting down gracefully...');
+
+    await pool.end();
+
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    app.log.info('🛑 Received SIGTERM, shutting down gracefully...');
+
+    await pool.end();
+
+    process.exit(0);
+});

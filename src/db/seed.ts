@@ -7,7 +7,7 @@ import { seedUsers, seedPosts } from './seeds';
 
 /**
  * Database Seeder
- * 
+ *
  * This script populates your database with realistic test data.
  * It uses modular seeders for each table to maintain clean separation.
  */

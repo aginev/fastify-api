@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/mysql2';
 import { migrate } from 'drizzle-orm/mysql2/migrator';
 import mysql from 'mysql2/promise';
-import { dbConfig } from '../config/index.js';
+import { dbConfig } from '../config';
 
 /**
  * Migration runner for Drizzle ORM
@@ -22,6 +22,8 @@ async function runMigrations() {
             database: dbConfig.database,
             multipleStatements: true, // Required for migrations
         });
+
+        console.log('🔌 Database connection established');
 
         // Create Drizzle instance with the connection
         const db = drizzle(connection);
