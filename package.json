@@ -30,7 +30,8 @@
         "db:drop": "drizzle-kit drop",
         "db:check": "drizzle-kit check:mysql",
         "db:generate:name": "drizzle-kit generate --name",
-        "db:reset:migrations": "rm -rf src/db/migrations && pnpm db:generate"
+        "db:reset:migrations": "rm -rf src/db/migrations && pnpm db:generate",
+        "db:seed": "tsx src/db/seed.ts"
     },
     "keywords": [],
     "author": "",
@@ -44,6 +45,7 @@
         "bcrypt": "^6.0.0",
         "dotenv": "^17.2.1",
         "drizzle-orm": "^0.44.4",
+        "drizzle-seed": "^0.3.1",
         "drizzle-zod": "^0.8.3",
         "fastify": "^5.5.0",
         "fastify-type-provider-zod": "^5.0.3",

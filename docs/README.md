@@ -19,6 +19,7 @@ Welcome to the project documentation! This directory contains comprehensive guid
 - [Database Schema](./database-schema.md) - Database table schemas and structure
 - [Drizzle Migrations](./drizzle-migrations.md) - Database migration system and workflow
 - [Migration Quick Start](./migration-quickstart.md) - Get started with migrations in 5 minutes
+- [Database Seeding](./database-seeding.md) - Populate database with test data
 
 ### 🐳 Infrastructure
 - [Docker Guide](./docker-guide.md) - Container configuration and management
