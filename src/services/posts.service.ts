@@ -1,6 +1,6 @@
 import { eq, isNull, isNotNull, and } from 'drizzle-orm';
-import { db, posts, type Post, type NewPost, type UpdatePost } from '../db/index.js';
-import { PostError } from '../errors/index.js';
+import { db, posts, type Post, type NewPost, type UpdatePost } from '@db';
+import { PostError } from '@errors';
 
 /**
  * Post service for handling all post-related database operations

@@ -5,17 +5,17 @@ import type {
 } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { IncomingMessage } from 'node:http';
-import { createErrorHandler, createRequestContextHook } from './middleware';
-import { getRequestId } from './context';
-import { serverConfig } from './config';
-import type { Request, Reply } from './types';
+import { createErrorHandler, createRequestContextHook } from '@middlewares';
+import { getRequestId } from '@/context';
+import { serverConfig } from '@/config';
+import type { Request, Reply } from '@/types';
 import helmet from '@fastify/helmet';
 import sensible from '@fastify/sensible';
 import cors from '@fastify/cors';
 import underPressure from '@fastify/under-pressure';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { registerRoutes } from './routes';
-import { pool } from './db/connection';
+import { registerRoutes } from '@/routes';
+import { pool } from '@/db/connection';
 
 const port = serverConfig.port;
 const transport = serverConfig.isDevelopment

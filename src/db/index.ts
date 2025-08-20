@@ -1,3 +1,3 @@
-export * from './connection.js';
-export * from './models/index.js';
-export * from '../services/index.js';
+export * from './connection';
+export * from './models';
+export * from '../services';

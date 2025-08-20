@@ -1,7 +1,7 @@
 // Export all configuration
-export * from './database.js';
-export * from './server.js';
+export * from './database';
+export * from './server';
 
 // Re-export commonly used configs for convenience
-export { dbConfig } from './database.js';
-export { serverConfig } from './server.js';
+export { dbConfig } from './database';
+export { serverConfig } from './server';

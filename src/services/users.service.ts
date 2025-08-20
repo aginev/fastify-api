@@ -1,9 +1,9 @@
 import { eq, or, and, ne, isNull } from 'drizzle-orm';
-import { db, users, posts, type User, type NewUser, type UpdateUser } from '../db/index.js';
+import { db, users, posts, type User, type NewUser, type UpdateUser } from '@db';
 import bcrypt from 'bcrypt';
 import {
     UserError
-} from '../errors/index.js';
+} from '@errors';
 
 /**
  * User service for handling all user-related database operations

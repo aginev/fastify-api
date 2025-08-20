@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { Request, Reply } from '../types';
+import type { Request, Reply } from '@/types';
 
 export async function rootRoutes(app: FastifyInstance) {
     app.get('/', async (_req: Request, reply: Reply) => {

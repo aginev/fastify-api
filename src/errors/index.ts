@@ -1,7 +1,7 @@
 // Export base error classes
-export * from './base.js';
+export * from './base.error';
 
 // Export resource-specific errors
-export * from './user-errors.js';
-export * from './post-errors.js';
-export * from './database-errors.js';
+export * from './user.error';
+export * from './post.error';
+export * from './database.error';

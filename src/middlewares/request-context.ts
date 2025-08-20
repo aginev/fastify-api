@@ -1,6 +1,6 @@
 import type { HookHandlerDoneFunction } from 'fastify';
-import { setContext, type Store } from '../context';
-import type { Request, Reply } from '../types';
+import { setContext, type Store } from '@/context';
+import type { Request, Reply } from '@/types';
 
 export function createRequestContextHook(
     req: Request,

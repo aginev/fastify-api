@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createInsertSchema } from 'drizzle-zod';
-import { users } from '../db/models/users.model.js';
+import { users } from '@db/models';
 
 // Generate Zod schema directly from Drizzle table definition
 export const UserDataRequest = createInsertSchema(users, {

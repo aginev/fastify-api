@@ -1,4 +1,4 @@
-import { AppError, type ErrorContext } from './base.js';
+import { AppError, type ErrorContext } from './base.error';
 
 /**
  * PostError - Static factory for creating post-related errors

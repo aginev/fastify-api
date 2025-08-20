@@ -1,8 +1,8 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
 import { DrizzleError, DrizzleQueryError } from 'drizzle-orm';
-import { AppError } from '../errors/index.js';
-import { getLogLevel, type LogLevel } from '../utils/logging';
+import { AppError } from '@errors';
+import { getLogLevel, type LogLevel } from '@/utils/logging';
 
 interface ErrorResponse {
     error: string;

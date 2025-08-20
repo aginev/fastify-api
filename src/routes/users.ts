@@ -1,19 +1,36 @@
 import type { FastifyInstance } from 'fastify';
-import type { Request, Reply } from '../types';
-import { userService } from '../services/users.service.js';
-import { UserError } from '../errors/index.js';
-import { routeIdParam, UserDataRequest, ChangePasswordRequest } from '../requests/index.js';
+import type { Request, Reply } from '@/types';
+import { userService } from '@services';
+import { UserError } from '@errors';
+import {
+    routeIdParam,
+    UserDataRequest,
+    ChangePasswordRequest,
+} from '@requests';
+import {
+    UserResponse,
+    UserListResponse,
+    UserUpsertResponse
+} from '@responses';
 
 export async function userRoutes(app: FastifyInstance) {
     // Get all active users (excluding soft deleted)
-    app.get('/', async (req: Request, reply: Reply) => {
+    app.get('/', {
+        schema: {
+            response: UserListResponse
+        }
+    }, async (req: Request, reply: Reply) => {
         const users = await userService.findAll();
 
         return reply.send({ users });
     });
 
     // Get user by ID (excluding soft deleted)
-    app.get('/:id', async (req: Request, reply: Reply) => {
+    app.get('/:id', {
+        schema: {
+            response: UserResponse
+        }
+    }, async (req: Request, reply: Reply) => {
         const id = routeIdParam('User').parse((req.params as any).id);
 
         const user = await userService.findById(id);
@@ -26,7 +43,11 @@ export async function userRoutes(app: FastifyInstance) {
     });
 
     // Create new user
-    app.post('/', async (req: Request, reply: Reply) => {
+    app.post('/', {
+        schema: {
+            response: UserUpsertResponse
+        }
+    }, async (req: Request, reply: Reply) => {
         const userData = UserDataRequest.parse(req.body);
         const newUser = await userService.create(userData);
 
@@ -34,7 +55,11 @@ export async function userRoutes(app: FastifyInstance) {
     });
 
     // Update user
-    app.put('/:id', async (req: Request, reply: Reply) => {
+    app.put('/:id', {
+        schema: {
+            response: UserUpsertResponse
+        }
+    }, async (req: Request, reply: Reply) => {
         const id = routeIdParam('User').parse((req.params as any).id);
         const userData = UserDataRequest.parse(req.body);
 

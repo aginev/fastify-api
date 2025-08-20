@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createInsertSchema } from 'drizzle-zod';
-import { posts } from '../db/models/posts.model.js';
+import { posts } from '@db/models';
 
 // Generate Zod schema directly from Drizzle table definition
 export const PostDataRequest = createInsertSchema(posts, {

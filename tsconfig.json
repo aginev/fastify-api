@@ -17,7 +17,37 @@
             "node"
         ],
         "allowJs": true,
-        "checkJs": true
+        "checkJs": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "src/*"
+            ],
+            "@errors": [
+                "src/errors"
+            ],
+            "@requests": [
+                "src/requests"
+            ],
+            "@responses": [
+                "src/responses"
+            ],
+            "@services": [
+                "src/services"
+            ],
+            "@middlewares": [
+                "src/middlewares"
+            ],
+            "@db": [
+                "src/db"
+            ],
+            "@db/models": [
+                "src/db/models"
+            ],
+            "@types": [
+                "src/types"
+            ]
+        }
     },
     "include": [
         "src"

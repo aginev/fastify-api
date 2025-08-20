@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import type { Request, Reply } from '../types';
-import { getRequestId, getContext } from '../context';
+import type { Request, Reply } from '@/types';
+import { getRequestId, getContext } from '@/context';
 
 export async function healthRoutes(app: FastifyInstance) {
     app.get('/live', async () => ({ ok: true }));

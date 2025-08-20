@@ -1,4 +1,4 @@
-import { AppError, type ErrorContext } from './base.js';
+import { AppError, type ErrorContext } from './base.error';
 
 /**
  * User-related error classes
