@@ -6,6 +6,7 @@ const ServerEnvSchema = z.object({
         .enum(['development', 'test', 'production'])
         .default('development'),
     PORT: z.coerce.number().int().min(0).max(65535).default(3000),
+    GRACEFUL_SHUTDOWN_TIMEOUT: z.coerce.number().int().min(1000).max(60000).default(10000),
 });
 
 // Parse server environment variables
@@ -24,4 +25,5 @@ export const serverConfig = {
 export const {
     NODE_ENV,
     PORT,
+    GRACEFUL_SHUTDOWN_TIMEOUT,
 } = serverEnv;

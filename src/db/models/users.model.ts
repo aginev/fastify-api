@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, timestamp, boolean, index } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, index } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { withActiveStatus, withPrimary, withSoftDelete, withTimestamps } from './base';
 import { posts } from './posts.model';

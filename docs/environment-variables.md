@@ -50,6 +50,7 @@ The application automatically loads variables from `.env` file using the `dotenv
 |----------|---------|-------------|---------|
 | `NODE_ENV` | `development` | Application environment | `development`, `test`, `production` |
 | `PORT` | `3000` | Server port number | `3000`, `8080` |
+| `GRACEFUL_SHUTDOWN_TIMEOUT` | `10000` | Graceful shutdown timeout in milliseconds. After this time, the process will force exit if shutdown hasn't completed. | `5000`, `15000`, `30000` |
 
 ### Logging
 
@@ -66,6 +67,7 @@ The application automatically loads variables from `.env` file using the `dotenv
 # Development environment
 NODE_ENV=development
 PORT=3000
+GRACEFUL_SHUTDOWN_TIMEOUT=10000
 LOG_LEVEL=debug
 LOG_FORMAT=pretty
 

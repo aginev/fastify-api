@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { getRequestId } from './context';
 import app, { start } from './server';
+import { GRACEFUL_SHUTDOWN_TIMEOUT } from './config';
 
 /**
  * Graceful shutdown
@@ -21,7 +22,7 @@ async function shutdown(signal: string) {
         app.log.error('Graceful shutdown timed out. Forcing exit.');
 
         process.exit(1);
-    }, 10_000);
+    }, GRACEFUL_SHUTDOWN_TIMEOUT);
 
     forceExit.unref();
 

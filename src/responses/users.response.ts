@@ -2,39 +2,24 @@ import { z } from 'zod';
 import { createSelectSchema } from 'drizzle-zod';
 import { users } from '@db/models';
 
-// Base user response schema (excludes password)
+// User response schema (excludes password)
 export const UserResponseSchema = createSelectSchema(users, {
-    // Exclude password from responses
     password: z.never(),
 });
 
-// Helper function to create response schema with user property
-const createUserResponse = (statusCode: number) => ({
-    [statusCode]: {
-        type: 'object',
-        properties: {
-            user: UserResponseSchema
-        }
-    }
-});
-
-// Fastify response schemas for OpenAPI documentation
-export const UserResponse = createUserResponse(200);
+// Simple response schemas - just like the fastify-type-provider-zod examples
+export const UserResponse = {
+    200: UserResponseSchema
+};
 
 export const UserListResponse = {
-    200: {
-        type: 'object',
-        properties: {
-            users: z.array(UserResponseSchema)
-        }
-    }
+    200: UserResponseSchema.array()
 };
 
 export const UserUpsertResponse = {
-    ...createUserResponse(200),
-    ...createUserResponse(201)
+    200: UserResponseSchema,
+    201: UserResponseSchema
 };
 
-// Type exports for response schemas
+// Type exports
 export type UserResponseType = z.infer<typeof UserResponseSchema>;
-export type UserListResponseType = z.infer<typeof UserResponseSchema>[];
