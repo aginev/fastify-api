@@ -1,5 +1,5 @@
 import { eq, or, and, ne, isNull } from 'drizzle-orm';
-import { db, users, posts, type User, type NewUser, type UpdateUser } from '@db';
+import { db, users, posts, type User, type NewUser, type UpdateUser, type PublicUser, publicUserSelect } from '@db';
 import bcrypt from 'bcrypt';
 import {
     UserError
@@ -28,7 +28,7 @@ export const userService = {
     /**
      * Create a new user with hashed password
      */
-    async create(userData: NewUser): Promise<User> {
+    async create(userData: NewUser): Promise<PublicUser> {
         // Check if email already exists
         const existingUser = await db
             .select({ email: users.email })
@@ -58,8 +58,12 @@ export const userService = {
             });
         }
 
-        // Fetch the complete user data using the returned ID
-        const [user] = await db.select().from(users).where(eq(users.id, result[0].id)).limit(1);
+        // Fetch the complete user data using the returned ID (public data only)
+        const [user] = await db
+            .select(publicUserSelect)
+            .from(users)
+            .where(eq(users.id, result[0].id))
+            .limit(1);
 
         if (!user) {
             throw UserError.creationFailed({
@@ -73,10 +77,10 @@ export const userService = {
     },
 
     /**
-     * Authenticate user with email and password
+     * Authenticate user with email and password (needs password for verification)
      */
     async authenticate(email: string, password: string): Promise<User | null> {
-        // Find user by email
+        // Find user by email (including password for verification)
         const [user] = await db
             .select()
             .from(users)
@@ -122,11 +126,11 @@ export const userService = {
     },
 
     /**
-     * Find user by ID
+     * Find user by ID (public data only - no password)
      */
-    async findById(id: number): Promise<User | undefined> {
+    async findById(id: number): Promise<PublicUser | undefined> {
         const [user] = await db
-            .select()
+            .select(publicUserSelect)
             .from(users)
             .where(eq(users.id, id))
             .limit(1);
@@ -135,11 +139,11 @@ export const userService = {
     },
 
     /**
-     * Find user by email
+     * Find user by email (public data only - no password)
      */
-    async findByEmail(email: string): Promise<User | undefined> {
+    async findByEmail(email: string): Promise<PublicUser | undefined> {
         const [user] = await db
-            .select()
+            .select(publicUserSelect)
             .from(users)
             .where(eq(users.email, email))
             .limit(1);
@@ -148,11 +152,11 @@ export const userService = {
     },
 
     /**
-     * Find all users with pagination
+     * Find all users with pagination (public data only - no password)
      */
-    async findAll(limit = 50, offset = 0): Promise<User[]> {
+    async findAll(limit = 50, offset = 0): Promise<PublicUser[]> {
         return db
-            .select()
+            .select(publicUserSelect)
             .from(users)
             .limit(limit)
             .offset(offset);
@@ -174,7 +178,7 @@ export const userService = {
     /**
      * Update user information
      */
-    async update(id: number, userData: UpdateUser): Promise<User | undefined> {
+    async update(id: number, userData: UpdateUser): Promise<PublicUser | undefined> {
         // Check if email conflicts with existing users
         if (userData.email) {
             const emailAvailable = await this.isEmailAvailable(userData.email, id);
@@ -196,9 +200,9 @@ export const userService = {
             .set(updateData)
             .where(eq(users.id, id));
 
-        // Fetch updated user to verify the update was successful
+        // Fetch updated user to verify the update was successful (public data only)
         const [updatedUser] = await db
-            .select()
+            .select(publicUserSelect)
             .from(users)
             .where(eq(users.id, id))
             .limit(1);
@@ -231,6 +235,17 @@ export const userService = {
     async findByIdWithPosts(id: number) {
         const [user] = await db.query.users.findMany({
             where: eq(users.id, id),
+            columns: {
+                id: true,
+                email: true,
+                first_name: true,
+                last_name: true,
+                is_active: true,
+                created_at: true,
+                updated_at: true,
+                deleted_at: true,
+                password: false,  // ✅ Explicitly exclude password
+            },
             with: {
                 posts: {
                     where: isNull(posts.deleted_at),
