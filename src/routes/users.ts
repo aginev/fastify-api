@@ -29,8 +29,15 @@ export async function userRoutes(app: FastifyInstance) {
         return reply.send(user);
     });
 
-    // Create new user
-    app.post('/', async (req: Request, reply: Reply) => {
+    // Create new user (with stricter rate limiting)
+    app.post('/', {
+        config: {
+            rateLimit: {
+                max: 5, // Only 5 user creations per time window
+                timeWindow: '15 minutes'
+            }
+        }
+    }, async (req: Request, reply: Reply) => {
         const userData = UserDataRequest.parse(req.body);
         const newUser = await userService.create(userData);
 
@@ -84,8 +91,15 @@ export async function userRoutes(app: FastifyInstance) {
         return reply.send({ deleted: id, hard: true });
     });
 
-    // Change user password
-    app.patch('/:id/password', async (req: Request, reply: Reply) => {
+    // Change user password (with stricter rate limiting)
+    app.patch('/:id/password', {
+        config: {
+            rateLimit: {
+                max: 3, // Only 3 password changes per time window
+                timeWindow: '15 minutes'
+            }
+        }
+    }, async (req: Request, reply: Reply) => {
         const id = routeIdParam('User').parse((req.params as any).id);
         const passwordData = ChangePasswordRequest.parse(req.body);
 

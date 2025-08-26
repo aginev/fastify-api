@@ -13,6 +13,7 @@ import helmet from '@fastify/helmet';
 import sensible from '@fastify/sensible';
 import cors from '@fastify/cors';
 import underPressure from '@fastify/under-pressure';
+import rateLimit from '@fastify/rate-limit';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { registerRoutes } from '@/routes';
 import { pool } from '@/db/connection';
@@ -79,9 +80,6 @@ app.setNotFoundHandler((_req: Request, reply: Reply) => {
     reply.status(404).send({ error: 'Not Found' });
 });
 
-// Register all route modules
-await registerRoutes(app);
-
 export async function start() {
     try {
         // Core plugins
@@ -90,9 +88,37 @@ export async function start() {
         await app.register(cors);
         await app.register(underPressure);
 
+        // Rate limiting (must be registered before routes)
+        await app.register(rateLimit, {
+            max: serverConfig.rateLimit.max,
+            timeWindow: serverConfig.rateLimit.timeWindow,
+            errorResponseBuilder: (req, context) => {
+                return {
+                    error: 'Too Many Requests',
+                    message: `Rate limit exceeded, retry in ${Math.round(context.ttl / 1000)} seconds`,
+                    statusCode: 429,
+                    requestId: req.id,
+                };
+            },
+            addHeaders: {
+                'x-ratelimit-limit': true,
+                'x-ratelimit-remaining': true,
+                'x-ratelimit-reset': true,
+                'retry-after': true,
+            },
+            keyGenerator: (req) => {
+                // Use IP address as the key for rate limiting
+                return req.ip;
+            },
+        });
+
+        // Register all route modules (after rate limiting)
+        await registerRoutes(app);
+
         await app.listen({ port, host: '0.0.0.0' });
 
         app.log.info(`Server listening on http://localhost:${port}`);
+        app.log.info(`Rate limiting: ${serverConfig.rateLimit.max} requests per ${serverConfig.rateLimit.timeWindow}ms`);
 
         app.isReady = true;
     } catch (err) {
